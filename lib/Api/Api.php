@@ -52,7 +52,16 @@ class Api implements LoggerAwareInterface
         $this->auth    = $auth;
         $this->baseUrl = $baseUrl;
     }
-
+	
+    
+    public function newApiKey($user){
+    	
+    	return array(
+    			'public_key'=>'ClefPublicClefPublicClefPublicClefPublic', 
+    			'secret_key'=>'SecretKeySecretKeySecretKeySecretKeySecretKey'
+    			
+    	);
+    }
     /**
      * Get the logger.
      *
