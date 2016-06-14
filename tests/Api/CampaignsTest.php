@@ -13,19 +13,23 @@ class CampaignsTest extends MauticApiTestCase
 {
     public function testGet()
     {
+        echo "CampaignsTest - testGet on \n";
+
         $apiContext = $this->getContext('campaigns');
         $result     = $apiContext->get(1);
 
-        $message = isset($result['error']) ? $result['error']['message'] : '';
-        $this->assertFalse(isset($result['error']), $message);
-    }
-
-    public function testGetList()
-    {
-        $apiContext = $this->getContext('campaigns');
-        $result     = $apiContext->getList();
+        echo "result => ".print_r($result, true);
 
         $message = isset($result['error']) ? $result['error']['message'] : '';
         $this->assertFalse(isset($result['error']), $message);
     }
+
+//     public function testGetList()
+//     {
+//         $apiContext = $this->getContext('campaigns');
+//         $result     = $apiContext->getList();
+
+//         $message = isset($result['error']) ? $result['error']['message'] : '';
+//         $this->assertFalse(isset($result['error']), $message);
+//     }
 }
