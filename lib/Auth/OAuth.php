@@ -154,44 +154,32 @@ class OAuth extends ApiAuth implements AuthInterface
         $this->_callback            = $callback;
 
 
-        echo "setup on \n";
-
         if ($baseUrl) {
-            echo "base url exists ";
             if ($version === 'OAuth1a') {
-                echo "OAuth1A ";
                 if (!$this->_access_token_url) {
-                    echo "access token url does not exist ";
                     $this->_access_token_url = $baseUrl . '/oauth/v1/access_token';
                 }
                 if (!$this->_request_token_url) {
-                    echo "_request_token_url does not exist ";
                     $this->_request_token_url = $baseUrl . '/oauth/v1/request_token';
                 }
                 if (!$this->_authorize_url) {
-                    echo "_authorize_url does not exist ";
                     $this->_authorize_url = $baseUrl . '/oauth/v1/authorize';
                 }
             } else {
-                echo "OAuth2 ";
                 if (!$this->_access_token_url) {
-                    echo "access token url does not exist ";
                     $this->_access_token_url = $baseUrl . '/oauth/v2/token';
                 }
                 if (!$this->_authorize_url) {
-                    echo "_authorize_url does not exist ";
                     $this->_authorize_url = $baseUrl . '/oauth/v2/authorize';
                 }
             }
         }
 
         if (!empty($scope)) {
-            echo "scope existe \n";
             $this->setScope($scope);
         }
 
         if (!empty($accessToken)) {
-            echo "accessToken existe \n";
             $this->setAccessTokenDetails(
                 array(
                     'access_token'        => $accessToken,
@@ -201,8 +189,6 @@ class OAuth extends ApiAuth implements AuthInterface
                 )
             );
         }
-
-        echo "setup off \n";
     }
 
     /**
@@ -288,20 +274,11 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     public function setAccessTokenDetails(array $accessTokenDetails)
     {
-        echo "setAccessTokenDetails on \n";
-        echo "array accessTokenDetails = ".print_r($accessTokenDetails, true);
 
         $this->_access_token        = isset($accessTokenDetails['access_token']) ? $accessTokenDetails['access_token'] : null;
         $this->_access_token_secret = isset($accessTokenDetails['access_token_secret']) ? $accessTokenDetails['access_token_secret'] : null;
         $this->_expires             = isset($accessTokenDetails['expires']) ? $accessTokenDetails['expires'] : null;
         $this->_refresh_token       = isset($accessTokenDetails['refresh_token']) ? $accessTokenDetails['refresh_token'] : null;
-
-        echo "  this->_access_token  = ".$this->_access_token ."\n";
-        echo "  this->_access_token_secret  = ".$this->_access_token_secret ."\n";
-        echo "  this->_expires  = ".$this->_expires ."\n";
-        echo "  this->_refresh_token  = ".$this->_refresh_token ."\n";
-
-        echo "setAccessTokenDetails off \n";
 
         return $this;
     }
@@ -366,17 +343,9 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     public function isAuthorized()
     {
-        echo "isAuthorized on \n";
-
-        echo " _request_token_url = ".$this->_request_token_url . "\n";
-        echo " _access_token = ".$this->_access_token. "\n";
-        echo " _access_token_secret = ".$this->_access_token_secret. "\n";
-
         //Check for existing access token
         if (!empty($this->_request_token_url)) {
-            echo "request token url exist \n";
             if (strlen($this->_access_token) > 0 && strlen($this->_access_token_secret) > 0) {
-                echo "_access_token not null && _access_token_secret not null \n";
                 return true;
             }
         }
@@ -389,8 +358,6 @@ class OAuth extends ApiAuth implements AuthInterface
         if (strlen($this->_access_token) > 0) {
             return true;
         }
-
-        echo "isAuthorized off \n";
 
         return false;
     }

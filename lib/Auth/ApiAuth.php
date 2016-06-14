@@ -42,30 +42,21 @@ class ApiAuth
     public function newAuth($parameters = array(), $authMethod = 'OAuth')
     {
 
-        echo " newAuth on \n";
-
         $class      = 'Mautic\\Auth\\'.$authMethod;
         $authObject = new $class();
 
         $reflection = new \ReflectionMethod($class, 'setup');
         $pass       = array();
 
-        echo " reflection->getParameters => ".print_r($reflection->getParameters(), true);
-
         foreach ($reflection->getParameters() as $param) {
             if (isset($parameters[$param->getName()])) {
                 $pass[] = $parameters[$param->getName()];
             } else {
-                echo "param is null";
                 $pass[] = null;
             }
         }
 
-        echo " pass = ".print_r($pass, true);
-
         $reflection->invokeArgs($authObject, $pass);
-
-        echo " newAuth off \n";
 
         return $authObject;
     }
