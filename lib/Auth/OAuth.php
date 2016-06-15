@@ -369,11 +369,11 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     public function validateAccessToken()
     {
-        $this->log('validateAccessToken()');
+        echo 'validateAccessToken()';
 
         //Check to see if token in session has expired
         if (!empty($this->_expires) && $this->_expires < time()) {
-            $this->log('access token expired so reauthorize');
+            echo 'access token expired so reauthorize';
 
             if (strlen($this->_refresh_token) > 0) {
                 //use a refresh token to get a new token
@@ -388,23 +388,23 @@ class OAuth extends ApiAuth implements AuthInterface
 
         //Check for existing access token
         if (strlen($this->_access_token) > 0) {
-            $this->log('has access token');
+            echo 'has access token';
 
             return true;
         }
 
         //Reauthorize if no token was found
         if (strlen($this->_access_token) == 0) {
-            $this->log('access token empty so authorize');
+            echo 'access token empty so authorize';
 
             //OAuth flows
             if ($this->isOauth1()) {
                 //OAuth 1.0
-                $this->log('authorizing with OAuth1.0a spec');
+                echo 'authorizing with OAuth1.0a spec';
 
                 //Request token and authorize app
                 if (!isset($_GET['oauth_token']) && !isset($_GET['oauth_verifier'])) {
-                    $this->log('initializing authorization');
+                    echo 'initializing authorization';
 
                     //Request token
                     $this->requestToken();
@@ -428,7 +428,7 @@ class OAuth extends ApiAuth implements AuthInterface
             }
 
             //OAuth 2.0
-            $this->log('authorizing with OAuth2 spec');
+            echo 'authorizing with OAuth2 spec';
 
             //Authorize app
             if (!isset($_GET['state']) && !isset($_GET['code'])) {
@@ -465,7 +465,7 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     protected function requestToken($responseType = 'flat')
     {
-        $this->log('requestToken()');
+        echo 'requestToken()';
 
         //Make the request
         $settings = array(
@@ -477,7 +477,7 @@ class OAuth extends ApiAuth implements AuthInterface
 
         //Add token and secret to the session
         if (is_array($params) && isset($params['oauth_token']) && isset($params['oauth_token_secret'])) {
-            $this->log('token set as '.$params['oauth_token']);
+            echo 'token set as '.$params['oauth_token'];
 
             $_SESSION['oauth']['token']        = $params['oauth_token'];
             $_SESSION['oauth']['token_secret'] = $params['oauth_token_secret'];
@@ -488,7 +488,7 @@ class OAuth extends ApiAuth implements AuthInterface
             }
         } else {
             //Throw exception if the required parameters were not found
-            $this->log('request did not return oauth tokens');
+            echo 'request did not return oauth tokens';
 
             if ($this->_debug) {
                 $_SESSION['oauth']['debug']['response'] = $params;
@@ -520,18 +520,18 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     protected function requestAccessToken($method = 'POST', array $params = array(), $responseType = 'flat')
     {
-        $this->log('requestAccessToken()');
+        echo 'requestAccessToken()';
 
         //Set OAuth flow parameters
         if ($this->isOauth1()) {
             //OAuth 1.0
-            $this->log('using OAuth1.0a spec');
+            echo 'using OAuth1.0a spec';
 
             $parameters = array('oauth_verifier' => $_GET['oauth_verifier']);
             $parameters = array_merge($parameters, $params);
         } else {
             //OAuth 2.0
-            $this->log('using OAuth2 spec');
+            echo 'using OAuth2 spec';
 
             $parameters = array(
                 'client_id'     => $this->_client_id,
@@ -545,7 +545,7 @@ class OAuth extends ApiAuth implements AuthInterface
             }
 
             if (strlen($this->_refresh_token) > 0) {
-                $this->log('Using refresh token');
+                echo 'Using refresh token';
                 $parameters['grant_type']    = 'refresh_token';
                 $parameters['refresh_token'] = $this->_refresh_token;
             }
@@ -567,7 +567,7 @@ class OAuth extends ApiAuth implements AuthInterface
             if ($this->isOauth1()) {
                 //OAuth 1.0a
                 if (isset($params['oauth_token']) && isset($params['oauth_token_secret'])) {
-                    $this->log('access token set as '.$params['oauth_token']);
+                    echo 'access token set as '.$params['oauth_token'];
 
                     $this->_access_token         = $params['oauth_token'];
                     $this->_access_token_secret  = $params['oauth_token_secret'];
@@ -583,7 +583,7 @@ class OAuth extends ApiAuth implements AuthInterface
             } else {
                 //OAuth 2.0
                 if (isset($params['access_token']) && isset($params['expires_in'])) {
-                    $this->log('access token set as '.$params['access_token']);
+                    echo 'access token set as '.$params['access_token'];
 
                     $this->_access_token         = $params['access_token'];
                     $this->_expires              = time() + $params['expires_in'];
@@ -603,7 +603,7 @@ class OAuth extends ApiAuth implements AuthInterface
             }
         }
 
-        $this->log('response did not have an access token');
+        echo 'response did not have an access token';
 
         if ($this->_debug) {
             $_SESSION['oauth']['debug']['response'] = $params;
@@ -655,7 +655,7 @@ class OAuth extends ApiAuth implements AuthInterface
             $authUrl .= '&response_type='.$this->_redirect_type;
         }
 
-        $this->log('redirecting to auth url '.$authUrl);
+        echo 'redirecting to auth url '.$authUrl;
 
         //Redirect to authorization URL
         header('Location: '.$authUrl);
@@ -669,7 +669,7 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     public function makeRequest($url, array $parameters = array(), $method = 'GET', array $settings = array())
     {
-        $this->log('makeRequest('.$url.', '.http_build_query($parameters).', '.$method.',...)');
+        echo 'makeRequest('.$url.', '.http_build_query($parameters).', '.$method.',...)';
 
         $includeCallback = (isset($settings['includeCallback'])) ? $settings['includeCallback'] : false;
         $includeVerifier = (isset($settings['includeVerifier'])) ? $settings['includeVerifier'] : false;
@@ -680,7 +680,7 @@ class OAuth extends ApiAuth implements AuthInterface
         //Set OAuth parameters/headers
         if ($this->isOauth1()) {
             //OAuth 1.0
-            $this->log('making request using OAuth1.0a spec');
+            echo 'making request using OAuth1.0a spec';
 
             //Get standard OAuth headers
             $headers = $this->getOauthHeaders($includeCallback);
@@ -706,7 +706,7 @@ class OAuth extends ApiAuth implements AuthInterface
             }
         } else {
             //OAuth 2.0
-            $this->log('making request using OAuth2 spec');
+            echo 'making request using OAuth2 spec';
 
             $parameters['access_token'] = $this->_access_token;
         }
@@ -714,7 +714,7 @@ class OAuth extends ApiAuth implements AuthInterface
         //Create a querystring for GET/DELETE requests
         if (count($parameters) > 0 && in_array($method, array('GET', 'DELETE')) && strpos($url, '?') === false) {
             $url = $url.'?'.http_build_query($parameters);
-            $this->log('URL updated to '.$url);
+            echo 'URL updated to '.$url;
         }
 
         //Set default CURL options
@@ -746,7 +746,7 @@ class OAuth extends ApiAuth implements AuthInterface
         if (in_array($method, array('POST', 'PUT', 'PATCH'))) {
             $options[CURLOPT_POST]       = true;
             $options[CURLOPT_POSTFIELDS] = http_build_query($parameters);
-            $this->log('Posted parameters = '.$options[CURLOPT_POSTFIELDS]);
+            echo 'Posted parameters = '.$options[CURLOPT_POSTFIELDS];
         }
 
         //Make CURL request
