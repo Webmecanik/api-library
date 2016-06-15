@@ -976,6 +976,6 @@ class OAuth extends ApiAuth implements AuthInterface
      */
     protected function isOauth1()
     {
-        return strlen($this->_request_token_url) > 0;
+        return true;
     }
 }
