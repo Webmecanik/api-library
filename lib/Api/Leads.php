@@ -11,49 +11,25 @@ namespace Mautic\Api;
 
 /**
  * Leads Context
+ *
+ * This class is deprecated and will be removed in future versions! Use Contacts instead!
  */
-class Leads extends Api
+class Leads extends Contacts
 {
-
     /**
-     * {@inheritdoc}
-     */
-    protected $endpoint = 'leads';
-
-    /**
-     * Get a list of users available as lead owners
-     *
-     * @return array|mixed
-     */
-    public function getOwners()
-    {
-        return $this->makeRequest('leads/list/owners');
-    }
-
-    /**
-     * Get a list of custom fields
-     *
-     * @return array|mixed
-     */
-    public function getFieldList()
-    {
-        return $this->makeRequest('leads/list/fields');
-    }
-
-    /**
-     * Get a list of lead lists
+     * Get a list of lead segments
      *
      * @return array|mixed
      */
     public function getLists()
     {
-        return $this->makeRequest('leads/list/lists');
+        return $this->makeRequest('contacts/list/segments');
     }
 
     /**
      * Get a list of a lead's notes
      *
-     * @param int    $id Lead ID
+     * @param int    $id Contact ID
      * @param string $search
      * @param int    $start
      * @param int    $limit
@@ -75,27 +51,27 @@ class Leads extends Api
             }
         }
 
-        return $this->makeRequest('leads/'.$id.'/notes', $parameters);
+        return $this->makeRequest('contacts/'.$id.'/notes', $parameters);
     }
 
     /**
-     * Get a list of smart lists the lead is in
+     * Get a segment of smart segments the lead is in
      *
      * @param $id
      */
     public function getLeadLists($id)
     {
-        return $this->makeRequest('leads/'.$id.'/lists');
+        return $this->makeRequest('contacts/'.$id.'/segments');
     }
 
     /**
-     * Get a list of campaigns the lead is in
+     * Get a segment of campaigns the lead is in
      *
      * @param $id
      */
     public function getLeadCampaigns($id)
     {
-        return $this->makeRequest('leads/'.$id.'/campaigns');
+        return $this->makeRequest('contacts/'.$id.'/campaigns');
     }
     
     /**

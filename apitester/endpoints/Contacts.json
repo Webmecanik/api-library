@@ -1,0 +1,12 @@
+[
+    "contacts",
+    "contacts/{id}",
+    "contacts/list/fields",
+    "contacts/list/owners",
+    "contacts/new",
+    "contacts/{id}/edit",
+    "contacts/{id}/delete",
+    "contacts/{id}/notes",
+    "contacts/{id}/segments",
+    "contacts/{id}/campaigns"
+]
