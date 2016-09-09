@@ -6,34 +6,15 @@ Téléchargez la nouvelle version de l'API Webmecanik Automation : https://githu
 
 ## Evolutions non-rétrocompatible
 ### leadApi
-#### Anciennes commandes non supportées en 2.0
-```
-$leadApi = $this->getContext('leads');
-$lists = $leadApi->getLists();
-$lists ['leads']
-//
-$lists = $leadApi->getLists();
-//
-$leads = $leadApi->getLeadLists(1);
-```
+#### Anciennes fonctions non supportées en 2.0 et fonctions de remplacement
 
-#### Commandes de remplacement
-```
-$contactApi = $this->getContext('contacts');
-$lists = $contactApi->getLists();
-$lists ['contacts']
-//
-$lists   = $contactApi->getSegments();
-//
-$contacts   = $contactApi->getContactSegments(1);
-```
+* `$leadApi = $this->getContext('leads');` --> `$contactApi = $this->getContext('contacts');`
+* `$lists = $leadApi->getLists();` --> `$lists = $contactApi->getLists();`
+* `$lists ['leads'];` --> `$lists ['contacts'];`
+* `$lists = $leadApi->getLists();` --> `$lists   = $contactApi->getSegments();`
+* `$leads = $leadApi->getLeadLists(1);` --> `$contacts   = $contactApi->getContactSegments(1);`
 
 ### listApi
-#### Ancienne commande non supportée en 2.0
-```
-$listApi = $this->getContext('lists');
-```
-#### Commande de remplacement
-```
-$segmentApi = $this->getContext('segments');
-```
+#### Anciennes fonctions non supportées en 2.0 et fonctions de remplacement
+
+* `$listApi = $this->getContext('lists');` --> `$segmentApi = $this->getContext('segments');`
