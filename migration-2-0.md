@@ -9,10 +9,10 @@ Téléchargez la nouvelle version de l'API Webmecanik Automation : https://githu
 #### Anciennes fonctions non supportées en 2.0 et fonctions de remplacement
 
 * `$leadApi = $this->getContext('leads');` --> `$contactApi = $this->getContext('contacts');`
-* `$lists = $leadApi->getLists();` --> `$lists = $contactApi->getLists();`
-* `$lists ['leads'];` --> `$lists ['contacts'];`
-* `$lists = $leadApi->getLists();` --> `$lists   = $contactApi->getSegments();`
-* `$leads = $leadApi->getLeadLists(1);` --> `$contacts   = $contactApi->getContactSegments(1);`
+* `$lists = $leadApi->getLists();`         --> `$lists = $contactApi->getLists();`
+* `$lists ['leads'];`                      --> `$lists ['contacts'];`
+* `$lists = $leadApi->getLists();`         --> `$lists   = $contactApi->getSegments();`
+* `$leads = $leadApi->getLeadLists(1);`    --> `$contacts   = $contactApi->getContactSegments(1);`
 
 ### listApi
 #### Anciennes fonctions non supportées en 2.0 et fonctions de remplacement
