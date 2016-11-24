@@ -107,4 +107,40 @@ class Contacts extends Api
     public function getContactHistory($id) {
         return $this->makeRequest('contacts/'.$id.'/history');
     }
+
+    /**
+     * Change the number of points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function setPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/setpoints/'.$points, $parameters, 'PATCH');
+    }
+
+    /**
+     * Add points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function addPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/addpoints/'.$points, $parameters, 'PATCH');
+    }
+
+    /**
+     * Remove points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function subtractPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/subtractpoints/'.$points, $parameters, 'PATCH');
+    }
 }

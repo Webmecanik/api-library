@@ -13,6 +13,7 @@ namespace Mautic\Api;
  * Leads Context
  *
  * This class is deprecated and will be removed in future versions! Use Contacts instead!
+ * @deprecated Use Contacts instead!
  */
 class Leads extends Contacts
 {
@@ -82,5 +83,41 @@ class Leads extends Contacts
      */
     public function leadHistory($leadId) {
         return $this->makeRequest('contacts/'.$leadId.'/history');
+    }
+
+    /**
+     * Change the number of points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function setPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/setpoints/'.$points, $parameters, 'PATCH');
+    }
+
+    /**
+     * Add points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function addPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/addpoints/'.$points, $parameters, 'PATCH');
+    }
+
+    /**
+     * Remove points a lead
+     *
+     * @param int $leadId
+     * @param int $points
+     * @param array $parameters 'eventname' and 'actionname'
+     * @return mixed
+     */
+    public function subtractPoints($id, $points, array $parameters = array()) {
+        return $this->makeRequest('contacts/'.$id.'/subtractpoints/'.$points, $parameters, 'PATCH');
     }
 }
