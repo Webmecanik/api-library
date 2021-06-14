@@ -510,8 +510,10 @@ class OAuth extends AbstractAuth
         $query = parent::getQueryParameters($isPost, $parameters);
 
         if (isset($parameters['file'])) {
-            // Mautic's OAuth2 server does not recognize multipart forms so we have to append the access token as part of the URL
-            $query['access_token'] = $parameters['access_token'];
+            if (!$this->isOauth1()){
+                // Mautic's OAuth2 server does not recognize multipart forms so we have to append the access token as part of the URL
+                $query['access_token'] = $parameters['access_token'];
+            }
         }
 
         return $query;
