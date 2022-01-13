@@ -579,7 +579,16 @@ class OAuth extends AbstractAuth
             }
 
             //Add the parameters
-            $oAuthHeaders                    = array_merge($oAuthHeaders, $parameters);
+            $cleanedParameters = $parameters;
+            $possibleKeys = ['filters' => 'filters', 'plainPassword' => 'plainPassword'];
+            if (!empty(array_intersect_key($possibleKeys, $cleanedParameters))){
+                foreach ($possibleKeys as $possibleKey){
+                    if (array_key_exists($possibleKey, $cleanedParameters)) {
+                        unset($cleanedParameters[$possibleKey]);
+                    }
+                }
+            }
+            $oAuthHeaders                    = array_merge($oAuthHeaders, $cleanedParameters);
             $base_info                       = $this->buildBaseString($url, $method, $oAuthHeaders);
             $composite_key                   = $this->getCompositeKey();
             $oAuthHeaders['oauth_signature'] = base64_encode(hash_hmac('sha1', $base_info, $composite_key, true));
