@@ -47,6 +47,11 @@ class TwoLeggedOAuth2 extends AbstractAuth
     private $_access_token_url;
 
     /**
+     * @var string
+     */
+    private $_expires;
+
+    /**
      * {@inheritdoc}
      */
     public function isAuthorized()
@@ -58,10 +63,11 @@ class TwoLeggedOAuth2 extends AbstractAuth
      * @param string $baseUrl
      * @param string $clientKey    The username to use for Authentication *Required*
      * @param string $clientSecret The Password to use                    *Required*
+     * @param string $expiration   The expiration time in seconds
      *
      * @throws RequiredParameterMissingException
      */
-    public function setup($baseUrl, $clientKey, $clientSecret, $accessToken = null)
+    public function setup($baseUrl, $clientKey, $clientSecret, $expiration, $accessToken = null)
     {
         // we MUST have the username and password. No Blanks allowed!
         //
@@ -78,6 +84,7 @@ class TwoLeggedOAuth2 extends AbstractAuth
         $this->baseurl       = $baseUrl;
         $this->clientKey     = $clientKey;
         $this->clientSecret  = $clientSecret;
+        $this->_expires      = $expiration;
         $this->_access_token = $accessToken;
 
         if (!$this->_access_token_url) {
@@ -113,4 +120,18 @@ class TwoLeggedOAuth2 extends AbstractAuth
 
         return $this->_access_token;
     }
+
+    public function getAccessTokenAndExpirationTimestamp(): array
+    {
+        $this->getAccessToken();
+
+        $tokenDatasArray = [
+            'access_token' => $this->_access_token,
+            'expires_in'   => $this->_expires,
+        ];
+
+        return $tokenDatasArray;
+
+    }
+
 }
