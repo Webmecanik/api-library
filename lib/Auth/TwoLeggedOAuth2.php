@@ -117,6 +117,7 @@ class TwoLeggedOAuth2 extends AbstractAuth
         $accessTokenData = $this->makeRequest($this->_access_token_url, $parameters, 'POST');
         //store access token data however you want
         $this->_access_token = $accessTokenData['access_token'] ?? null;
+        $this->_expires      = $accessTokenData['expires_in'] ?? null;
 
         return $this->_access_token;
     }
