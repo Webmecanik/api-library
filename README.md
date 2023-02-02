@@ -1,6 +1,6 @@
 [![codecov](https://codecov.io/gh/mautic/api-library/branch/master/graph/badge.svg)](https://codecov.io/gh/mautic/api-library) [![Latest Stable Version](https://poser.pugx.org/mautic/api-library/v)](//packagist.org/packages/mautic/api-library) [![Total Downloads](https://poser.pugx.org/mautic/api-library/downloads)](//packagist.org/packages/mautic/api-library) [![Latest Unstable Version](https://poser.pugx.org/mautic/api-library/v/unstable)](//packagist.org/packages/mautic/api-library) [![License](https://poser.pugx.org/mautic/api-library/license)](//packagist.org/packages/mautic/api-library)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Using the Mautic API Library
@@ -18,14 +18,13 @@ composer require mautic/api-library
 
 ## Mautic Setup
 The API must be enabled in Mautic. Within Mautic, go to the Configuration page (located in the Settings menu) and under API Settings enable
-Mautic's API. If you intend on using Basic Authentication, ensure you enable it. You can also choose which OAuth protocol to use here.  After saving the configuration, go to the API Credentials page
-(located in the Settings menu) and create a new client.  Enter the callback/redirect URI that the request will be sent from.  Click Apply
-then copy the Client ID and Client Secret to the application that will be using the API.
+Mautic's API. If you intend to use Basic Authentication, ensure you enable it. You can also choose which OAuth protocol to use here.  After saving the configuration, go to the API Credentials page (located in the Settings menu) and create a new client.  Enter the callback/redirect URI that the request will be sent from.  Click Apply, then copy the Client ID and Client Secret to the application that will be using the API.
 
 ## Authorization
 
 ### Obtaining an access token
-The first step is to obtain authorization.  Mautic supports OAuth 2.  Thus it is best to have a configuration option within your project for the administrator
+The first step is to obtain authorization.  Mautic supports OAuth 1.0a and OAuth 2, however it is up to the administrator
+to decide which is enabled.  Thus it is best to have a configuration option within your project for the administrator
 to choose what method should be used by your code.
 
 ```php
@@ -45,6 +44,7 @@ $callback  = '';
 // ApiAuth->newAuth() will accept an array of Auth settings
 $settings = [
     'baseUrl'          => '',       // Base URL of the Mautic instance
+    'version'          => 'OAuth2', // Version of the OAuth can be OAuth2 or OAuth1a. OAuth2 is the default value.
     'clientKey'        => '',       // Client/Consumer key from Mautic
     'clientSecret'     => '',       // Client/Consumer secret key from Mautic
     'callback'         => '',       // Redirect URI/Callback URI for this script
@@ -53,6 +53,7 @@ $settings = [
 /*
 // If you already have the access token, et al, pass them in as well to prevent the need for reauthorization
 $settings['accessToken']        = $accessToken;
+$settings['accessTokenSecret']  = $accessTokenSecret; //for OAuth1.0a
 $settings['accessTokenExpires'] = $accessTokenExpires; //UNIX timestamp
 $settings['refreshToken']       = $refreshToken;
 */
@@ -302,9 +303,13 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="https://webmecanik.com"><img src="https://avatars.githubusercontent.com/u/462477?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Zdeno Kuzmany</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=kuzmany" title="Code">💻</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://webmecanik.com"><img src="https://avatars.githubusercontent.com/u/462477?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Zdeno Kuzmany</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=kuzmany" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/dlopez-akalam"><img src="https://avatars.githubusercontent.com/u/6641589?v=4?s=100" width="100px;" alt=""/><br /><sub><b>dlopez-akalam</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=dlopez-akalam" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/mollux"><img src="https://avatars.githubusercontent.com/u/3983285?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mollux</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=mollux" title="Code">💻</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->

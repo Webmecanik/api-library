@@ -41,7 +41,7 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Copy our API library config into the tests/ folder
       run: cp -a ./.github/ci-files/local.config.php tests/local.config.php
@@ -49,7 +49,7 @@ jobs:
     - name: Setup PHP, with composer and extensions
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 7.4
+        php-version: 8.0
         ini-values: session.save_handler=redis, session.save_path="tcp://127.0.0.1:6379"
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
         coverage: pcov
@@ -63,23 +63,21 @@ jobs:
       run: |
         sudo add-apt-repository ppa:ondrej/php -y
         sudo add-apt-repository ppa:ondrej/apache2 -y
-        sudo apt-get install apache2 libapache2-mod-php7.4
+        sudo apt-get install apache2 libapache2-mod-php8.0
         sudo a2enmod rewrite
-        sudo cp ./.github/workflows/mautic-apache.conf /etc/apache2/conf-available/mautic.conf
-        sudo a2enconf mautic
-        sudo sed -i 's,^session.save_handler =.*$,session.save_handler = redis,' /etc/php/7.4/apache2/php.ini
-        sudo sed -i 's,^;session.save_path =.*$,session.save_path = "tcp://127.0.0.1:6379",' /etc/php/7.4/apache2/php.ini
+        sudo sed -i 's,^session.save_handler =.*$,session.save_handler = redis,' /etc/php/8.0/apache2/php.ini
+        sudo sed -i 's,^;session.save_path =.*$,session.save_path = "tcp://127.0.0.1:6379",' /etc/php/8.0/apache2/php.ini
         sudo service apache2 restart
-        cat /etc/php/7.4/apache2/php.ini | grep session
+        cat /etc/php/8.0/apache2/php.ini | grep session
 
     - name: Install dependencies
       run: |
         composer validate --strict
         composer install --prefer-dist --no-progress
 
-    - name: Clone Mautic features or specific PR from GitHub
+    - name: Clone Mautic main branch or specific PR from GitHub
       run: |
-        gh repo clone mautic/mautic -- --branch features --single-branch --depth 1
+        gh repo clone mautic/mautic -- --single-branch --depth 1
         if [[ "${{ github.event.inputs.pr }}" != "" ]]; then
           pushd mautic
           gh pr checkout ${{ github.event.inputs.pr }}
@@ -94,8 +92,7 @@ jobs:
         sudo chmod -R 777 /var/www/html
         sudo chown -R www-data:www-data /var/www/html
         rm -rf /var/www/html/*
-        mkdir -p /var/www/html/mautic
-        mv $GITHUB_WORKSPACE/mautic/* /var/www/html/mautic
+        mv $GITHUB_WORKSPACE/mautic/* /var/www/html/
 
     - name: Install Mautic
       env:
@@ -103,21 +100,21 @@ jobs:
       run: |
         composer install --prefer-dist --no-progress
         cp $GITHUB_WORKSPACE/.github/ci-files/local.php ./app/config/local.php
-        php bin/console mautic:install http://localhost/mautic \
+        php bin/console mautic:install http://localhost/ \
           --force --mailer_from_name="GitHub Actions" --mailer_from_email="github-actions@mautic.org" \
-          --mailer_transport="smtp" --mailer_host="localhost" --mailer_port="1025"
+          --mailer_transport="smtp" --mailer_host="localhost" --mailer_port="1025" --env=dev
         php bin/console cache:warmup --no-interaction --env=dev
-        
-        sudo chmod -R 777 /var/www/html/mautic
-        sudo chown -R www-data:www-data /var/www/html/mautic
-      working-directory: /var/www/html/mautic
+      working-directory: /var/www/html/
 
       # Enable Twilio plugin with random credentials (needed for MessagesTest to function, doesn't actually contact Twilio API).
     - name: Enable Twilio plugin
       run: |
-        mysql -uroot -P${{ job.services.mysql.ports[3306] }} -h127.0.0.1 -e "USE mautictest; INSERT INTO plugin_integration_settings (id, plugin_id, name, is_published, supported_features, api_keys, feature_settings) VALUES (2, NULL, 'Twilio', 1, 'a:0:{}', 'a:2:{s:8:\"username\";s:169:\"bzFmNlIydWRSZXlIN2lQVkdpanJ4aTQ2NUh6RVdDbHlLRVhsWGZ4b0kyZVNxLzYrQ1J6V1RvMnlhVEp0c245TEp6eStQekx5ZVhLWjB1YVdoR3RnR2dHQ3k1emVVdGt5NzZKUmtjUnJ3c1E9|L8tbZRIYhwatT7Mq+HAdYA==\";s:8:\"password\";s:169:\"T2d2cFpXQWE5YVZnNFFianJSYURRYUtGRHBNZGZjM1VETXg2Wm5Va3NheW43MjVWUlJhTVlCL2pYMDBpbElONStiVVBNbEM3M3BaeGJMNkFKNUFEN1pTNldSRjc4bUM4SDh1SE9OY1k5MTg9|TeuSvfx4XSUOvp0O7T49Cg==\";}', 'a:4:{s:20:\"sending_phone_number\";N;s:22:\"disable_trackable_urls\";i:0;s:16:\"frequency_number\";N;s:14:\"frequency_time\";N;}');"
-        php bin/console mautic:plugins:reload
-      working-directory: /var/www/html/mautic
+        mysql -uroot -P${{ job.services.mysql.ports[3306] }} -h127.0.0.1 -e "USE mautictest; INSERT INTO plugin_integration_settings (plugin_id, name, is_published, supported_features, api_keys, feature_settings) VALUES (NULL, 'Twilio', 1, 'a:0:{}', 'a:2:{s:8:\"username\";s:169:\"bzFmNlIydWRSZXlIN2lQVkdpanJ4aTQ2NUh6RVdDbHlLRVhsWGZ4b0kyZVNxLzYrQ1J6V1RvMnlhVEp0c245TEp6eStQekx5ZVhLWjB1YVdoR3RnR2dHQ3k1emVVdGt5NzZKUmtjUnJ3c1E9|L8tbZRIYhwatT7Mq+HAdYA==\";s:8:\"password\";s:169:\"T2d2cFpXQWE5YVZnNFFianJSYURRYUtGRHBNZGZjM1VETXg2Wm5Va3NheW43MjVWUlJhTVlCL2pYMDBpbElONStiVVBNbEM3M3BaeGJMNkFKNUFEN1pTNldSRjc4bUM4SDh1SE9OY1k5MTg9|TeuSvfx4XSUOvp0O7T49Cg==\";}', 'a:4:{s:20:\"sending_phone_number\";N;s:22:\"disable_trackable_urls\";i:0;s:16:\"frequency_number\";N;s:14:\"frequency_time\";N;}');"
+        php bin/console mautic:plugins:reload --env=dev
+      working-directory: /var/www/html
+
+    - name: Set correct ownership so Apache can access the files
+      run: sudo chown -R www-data:www-data /var/www/html
     
     - name: Run tests
       run: vendor/bin/paratest -p 3 --coverage-clover coverage.xml
@@ -130,7 +127,7 @@ jobs:
       if: always()
       with:
         name: mautic-logs
-        path: /var/www/html/mautic/var/logs/
+        path: /var/www/html/var/logs/
 
     - name: Slack Notification if tests fail
       uses: rtCamp/action-slack-notify@v2
@@ -144,12 +141,12 @@ jobs:
     name: CS tests
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup PHP, with composer and extensions
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 7.4
+        php-version: 8.0
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
 
     - name: Install dependencies
