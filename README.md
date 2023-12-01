@@ -18,13 +18,14 @@ composer require mautic/api-library
 
 ## Mautic Setup
 The API must be enabled in Mautic. Within Mautic, go to the Configuration page (located in the Settings menu) and under API Settings enable
-Mautic's API. If you intend to use Basic Authentication, ensure you enable it. You can also choose which OAuth protocol to use here.  After saving the configuration, go to the API Credentials page (located in the Settings menu) and create a new client.  Enter the callback/redirect URI that the request will be sent from.  Click Apply, then copy the Client ID and Client Secret to the application that will be using the API.
+Mautic's API. If you intend to use Basic Authentication, ensure you enable it. You can also choose which OAuth protocol to use here.  After saving the configuration, go to the API Credentials page
+(located in the Settings menu) and create a new client.  Enter the callback/redirect URI that the request will be sent from.  Click Apply
+then copy the Client ID and Client Secret to the application that will be using the API.
 
 ## Authorization
 
 ### Obtaining an access token
-The first step is to obtain authorization.  Mautic supports OAuth 1.0a and OAuth 2, however it is up to the administrator
-to decide which is enabled.  Thus it is best to have a configuration option within your project for the administrator
+The first step is to obtain authorization.  Mautic supports OAuth 2.  Thus it is best to have a configuration option within your project for the administrator
 to choose what method should be used by your code.
 
 ```php
@@ -86,6 +87,41 @@ try {
 } catch (Exception $e) {
     // Do Error handling
 }
+```
+
+
+### Using 2-legged OAuth2 using Client Credentials
+
+The Client Credentials grant is used when applications request an access token to access their own resources, not on behalf of a user.
+
+```php
+<?php
+
+// Bootup the Composer autoloader
+include __DIR__ . '/vendor/autoload.php';  
+
+use Mautic\Auth\ApiAuth;
+
+$settings = [
+    'AuthMethod'   => 'TwoLeggedOAuth2',
+    'clientKey'    => '',
+    'clientSecret' => '',
+    'baseUrl'      => '',
+];
+
+// $settings['accessToken'] = 'your stored access token';
+
+
+$initAuth = new ApiAuth();
+$auth     = $initAuth->newAuth($settings, $settings['AuthMethod']);
+
+if (!isset($settings['accessToken'])) {
+    // store it for one hour and use it in $settings above
+    $accessToken = $auth->getAccessToken();
+}
+
+// Nothing else to do ... It's ready to use.
+// Just pass the auth object to the API context you are creating.
 ```
 
 ### Using Basic Authentication Instead
