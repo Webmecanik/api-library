@@ -403,7 +403,7 @@ class Contacts extends Api
     public function create(array $parameters, array $queryArguments = [])
     {
         $supported   = $this->isSupported('create');
-        $queryAppend = $queryArguments !== [] ? '?'.http_build_query($queryArguments) : '';
+        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
 
         return (true === $supported)
             ? $this->makeRequest($this->endpoint.'/new'.$queryAppend, $parameters, 'POST')
@@ -418,7 +418,7 @@ class Contacts extends Api
     public function createBatch(array $parameters, array $queryArguments = [])
     {
         $supported   = $this->isSupported('createBatch');
-        $queryAppend = $queryArguments !== [] ? '?'.http_build_query($queryArguments) : '';
+        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
 
         return (true === $supported)
             ? $this->makeRequest($this->endpoint.'/batch/new'.$queryAppend, $parameters, 'POST')
