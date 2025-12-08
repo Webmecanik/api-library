@@ -163,6 +163,48 @@ $auth     = $initAuth->newAuth($settings, 'BasicAuth');
 
 ```
 
+### Using 2-Legged OAuth2 (Client Credentials)
+
+The Client Credentials grant is used when applications request an access token to access their own resources, not on behalf of a user. This is ideal for server-to-server communication (cron jobs, background processes, etc.).
+
+**Note:** This requires Mautic 4.0+ with the client_credentials grant type enabled.
+
+```php
+<?php
+
+// Bootup the Composer autoloader
+include __DIR__ . '/vendor/autoload.php';
+
+use Mautic\Auth\ApiAuth;
+
+$settings = [
+    'AuthMethod'   => 'TwoLeggedOAuth2',
+    'baseUrl'      => 'https://your-mautic.com',
+    'clientKey'    => '',       // Client ID from Mautic API credentials
+    'clientSecret' => '',       // Client Secret from Mautic API credentials
+];
+
+// If you have a stored access token, you can pass it to avoid requesting a new one
+// $settings['accessToken'] = 'your_stored_access_token';
+// $settings['accessTokenExpires'] = 1234567890; // Unix timestamp
+
+$initAuth = new ApiAuth();
+$auth     = $initAuth->newAuth($settings, $settings['AuthMethod']);
+
+// Request a new access token if needed
+if (!$auth->isAuthorized()) {
+    $auth->requestAccessToken();
+}
+
+// Check if token was updated (for caching purposes)
+if ($auth->accessTokenUpdated()) {
+    $tokenData = $auth->getAccessTokenData();
+    // Store $tokenData['access_token'] and $tokenData['expires'] for future use
+}
+
+// The auth object is now ready to use with API contexts
+```
+
 ## API Requests
 Now that you have an access token and the auth object, you can make API requests.  The API is broken down into contexts.
 

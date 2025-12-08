@@ -78,4 +78,20 @@ class Emails extends Api
     {
         return $this->sendToContact($id, $leadId);
     }
+
+    /**
+     * Send a custom email to a specific contact.
+     *
+     * This allows sending an email with custom content (subject, body, etc.)
+     * directly to a contact without using a pre-defined email template.
+     *
+     * @param int   $contactId The ID of the contact to send the email to
+     * @param array $data      Email data (subject, body, etc.)
+     *
+     * @see https://developer.mautic.org/#send-email-to-contact (custom email section)
+     */
+    public function sendCustomToContact(int $contactId, array $data = []): array
+    {
+        return $this->makeRequest($this->endpoint.'/contact/'.$contactId.'/send/custom', $data, 'POST');
+    }
 }

@@ -450,4 +450,46 @@ class Contacts extends Api
             'POST'
         );
     }
+
+    /**
+     * Create a new contact.
+     *
+     * Overrides parent to support additional query arguments for plugins
+     * like Custom Objects (e.g., ['includeCustomObjects' => true]).
+     *
+     * @param array $parameters     Contact data
+     * @param array $queryArguments Optional query parameters (e.g., for Custom Objects)
+     *
+     * @return array|mixed
+     */
+    public function create(array $parameters, array $queryArguments = [])
+    {
+        $supported   = $this->isSupported('create');
+        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
+
+        return (true === $supported)
+            ? $this->makeRequest($this->endpoint.'/new'.$queryAppend, $parameters, 'POST')
+            : $supported;
+    }
+
+    /**
+     * Create a batch of new contacts.
+     *
+     * Overrides parent to support additional query arguments for plugins
+     * like Custom Objects (e.g., ['includeCustomObjects' => true]).
+     *
+     * @param array $parameters     Array of contact data
+     * @param array $queryArguments Optional query parameters (e.g., for Custom Objects)
+     *
+     * @return array|mixed
+     */
+    public function createBatch(array $parameters, array $queryArguments = [])
+    {
+        $supported   = $this->isSupported('createBatch');
+        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
+
+        return (true === $supported)
+            ? $this->makeRequest($this->endpoint.'/batch/new'.$queryAppend, $parameters, 'POST')
+            : $supported;
+    }
 }
