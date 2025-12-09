@@ -437,36 +437,6 @@ class Contacts extends Api
     }
 
     /**
-     * Create a new item (if supported).
-     *
-     * @return array|mixed
-     */
-    public function create(array $parameters, array $queryArguments = [])
-    {
-        $supported   = $this->isSupported('create');
-        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
-
-        return (true === $supported)
-            ? $this->makeRequest($this->endpoint.'/new'.$queryAppend, $parameters, 'POST')
-            : $supported;
-    }
-
-    /**
-     * Create a batch of new items.
-     *
-     * @return array|mixed
-     */
-    public function createBatch(array $parameters, array $queryArguments = [])
-    {
-        $supported   = $this->isSupported('createBatch');
-        $queryAppend = [] !== $queryArguments ? '?'.http_build_query($queryArguments) : '';
-
-        return (true === $supported)
-            ? $this->makeRequest($this->endpoint.'/batch/new'.$queryAppend, $parameters, 'POST')
-            : $supported;
-    }
-
-    /**
      * Remove UTM Tags from a Contact.
      *
      * @param int $id
