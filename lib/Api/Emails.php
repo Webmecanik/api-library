@@ -82,13 +82,25 @@ class Emails extends Api
     /**
      * Send a custom email to a specific contact.
      *
-     * This allows sending an email with custom content (subject, body, etc.)
-     * directly to a contact without using a pre-defined email template.
+     * This allows sending an email with custom content directly to a contact
+     * without using a pre-defined email template.
+     *
+     * Required data parameters:
+     *   - fromEmail: Sender email address
+     *   - subject: Email subject
+     *   - content: Email body (HTML)
+     *
+     * Optional data parameters:
+     *   - fromName: Sender name
+     *   - replyToEmail: Reply-to email address
+     *   - replyToName: Reply-to name
+     *
+     * Note: This endpoint requires Mautic with PR #12854 merged (not in standard Mautic 5.x).
      *
      * @param int   $contactId The ID of the contact to send the email to
-     * @param array $data      Email data (subject, body, etc.)
+     * @param array $data      email data array with keys: fromEmail, subject, content, etc
      *
-     * @see https://developer.mautic.org/#send-email-to-contact (custom email section)
+     * @return array Response with 'success' and 'trackingHash' on success
      */
     public function sendCustomToContact(int $contactId, array $data = []): array
     {

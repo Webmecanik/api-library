@@ -71,10 +71,15 @@ $contactApi->subtractPointGroupScore($contactId, $groupId, $points);
 New method to send custom emails without pre-defined templates:
 ```php
 $emailApi->sendCustomToContact($contactId, [
-    'subject' => 'Hello',
-    'body'    => '<p>Custom content</p>',
+    'fromEmail' => 'noreply@example.com',
+    'fromName'  => 'My App',           // optional
+    'subject'   => 'Hello',
+    'content'   => '<p>Custom HTML content with {{contactfield=firstname}}</p>',
 ]);
 ```
+
+**Note:** This feature requires Mautic with [PR #12854](https://github.com/mautic/mautic/pull/12854) merged.
+It is not available in standard Mautic 5.x releases.
 
 # Version Compatibility
 
