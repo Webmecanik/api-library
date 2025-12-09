@@ -101,7 +101,9 @@ abstract class AbstractAuth implements AuthInterface
     {
         $this->log('makeRequest('.$url.', '.http_build_query($parameters).', '.$method.',...)');
 
-        [$url, $parameters] = $this->separateUrlParams($url, $parameters);
+        if ($method === 'GET') {   // We want to keep get arguments for non-GET requests
+            [$url, $parameters] = $this->separateUrlParams($url, $parameters);
+        }
 
         // Make sure $method is capitalized for congruency
         $method  = strtoupper($method);

@@ -11,10 +11,6 @@ on:
       pr:
         description: 'PR number in mautic/mautic to test against'
         required: false
-  schedule:
-    # Run every day at 10 AM UTC to discover potential issues with recent changes to Mautic itself
-    - cron: '0 10 * * *'
-
 jobs:
   phpunit:
     runs-on: ubuntu-24.04

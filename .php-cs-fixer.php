@@ -8,16 +8,16 @@ $config = new PhpCsFixer\Config();
 
 return $config
     ->setRules([
-        '@Symfony' => true,
+        '@Symfony'               => true,
         'binary_operator_spaces' => [
             'operators' => [
-                '=' => 'align',
+                '='  => 'align',
                 '=>' => 'align',
             ],
         ],
         'ordered_imports' => true,
-        'array_syntax' => [
-            'syntax' => 'short'
+        'array_syntax'    => [
+            'syntax' => 'short',
         ],
         'no_unused_imports' => false,
     ])
