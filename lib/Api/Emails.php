@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -15,19 +16,10 @@ namespace Mautic\Api;
  */
 class Emails extends Api
 {
-    /**
-     * {@inheritdoc}
-     */
     protected $endpoint = 'emails';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $listName = 'emails';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $itemName = 'email';
 
     /**
@@ -37,9 +29,6 @@ class Emails extends Api
         'emails/(.*?)/contact/(.*?)/send' => 'emails/$1/send/contact/$2', // 2.6.0
     ];
 
-    /**
-     * {@inheritdoc}
-     */
     protected $searchCommands = [
         'ids',
         'is:published',
@@ -88,5 +77,33 @@ class Emails extends Api
     public function sendToLead($id, $leadId)
     {
         return $this->sendToContact($id, $leadId);
+    }
+
+    /**
+     * Send a custom email to a specific contact.
+     *
+     * This allows sending an email with custom content directly to a contact
+     * without using a pre-defined email template.
+     *
+     * Required data parameters:
+     *   - fromEmail: Sender email address
+     *   - subject: Email subject
+     *   - content: Email body (HTML)
+     *
+     * Optional data parameters:
+     *   - fromName: Sender name
+     *   - replyToEmail: Reply-to email address
+     *   - replyToName: Reply-to name
+     *
+     * Note: This endpoint requires Mautic with PR #12854 merged (not in standard Mautic 5.x).
+     *
+     * @param int   $contactId The ID of the contact to send the email to
+     * @param array $data      email data array with keys: fromEmail, subject, content, etc
+     *
+     * @return array Response with 'success' and 'trackingHash' on success
+     */
+    public function sendCustomToContact(int $contactId, array $data = []): array
+    {
+        return $this->makeRequest($this->endpoint.'/contact/'.$contactId.'/send/custom', $data, 'POST');
     }
 }

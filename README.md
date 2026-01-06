@@ -1,19 +1,50 @@
 [![codecov](https://codecov.io/gh/mautic/api-library/branch/master/graph/badge.svg)](https://codecov.io/gh/mautic/api-library) [![Latest Stable Version](https://poser.pugx.org/mautic/api-library/v)](//packagist.org/packages/mautic/api-library) [![Total Downloads](https://poser.pugx.org/mautic/api-library/downloads)](//packagist.org/packages/mautic/api-library) [![Latest Unstable Version](https://poser.pugx.org/mautic/api-library/v/unstable)](//packagist.org/packages/mautic/api-library) [![License](https://poser.pugx.org/mautic/api-library/license)](//packagist.org/packages/mautic/api-library)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Using the Mautic API Library
 
 ## Requirements
-* PHP 7.2 or newer
-* cURL support
+* PHP 8.0 or newer
 
 ## Installing the API Library
 You can install the API Library with the following command:
 
 ```bash
 composer require mautic/api-library
+```
+
+N.B. Make sure you have installed a PSR-18 HTTP Client before you install this package or install one at the same time e.g. `composer require mautic/api-library guzzlehttp/guzzle:^7.3`.
+
+### HTTP Client
+
+We are decoupled from any HTTP messaging client with the help of [PSR-18 HTTP Client](https://www.php-fig.org/psr/psr-18/). This requires an extra package providing [psr/http-client-implementation](https://packagist.org/providers/psr/http-client-implementation). To use Guzzle 7, for example, simply require `guzzlehttp/guzzle`:
+
+``` bash
+composer require guzzlehttp/guzzle:^7.3
+```
+
+The installed HTTP Client is auto-discovered using [php-http/discovery](https://packagist.org/providers/php-http/discovery), but you can also provide your own HTTP Client if you like.
+
+```php
+<?php
+
+// Bootup the Composer autoloader
+include __DIR__ . '/vendor/autoload.php';  
+
+use GuzzleHttp\Client;
+use Mautic\Auth\ApiAuth;
+
+// Initiate an HTTP Client
+$httpClient = new Client([
+    'timeout'  => 10,
+]);
+
+// Initiate the auth object
+$initAuth = new ApiAuth($httpClient);
+$auth     = $initAuth->newAuth($settings);
+// etc.
 ```
 
 ## Mautic Setup
@@ -167,13 +198,47 @@ $auth     = $initAuth->newAuth($settings, 'BasicAuth');
  ];
 
 ```
-**Note:** You can also specify a CURLOPT_TIMEOUT in the request (default is set to wait indefinitely):
-```php
-$initAuth = new ApiAuth();
-$auth     = $initAuth->newAuth($settings, 'BasicAuth');
-$timeout  = 10;
 
-$auth->setCurlTimeout($timeout);
+### Using 2-Legged OAuth2 (Client Credentials)
+
+The Client Credentials grant is used when applications request an access token to access their own resources, not on behalf of a user. This is ideal for server-to-server communication (cron jobs, background processes, etc.).
+
+**Note:** This requires Mautic 4.0+ with the client_credentials grant type enabled.
+
+```php
+<?php
+
+// Bootup the Composer autoloader
+include __DIR__ . '/vendor/autoload.php';
+
+use Mautic\Auth\ApiAuth;
+
+$settings = [
+    'AuthMethod'   => 'TwoLeggedOAuth2',
+    'baseUrl'      => 'https://your-mautic.com',
+    'clientKey'    => '',       // Client ID from Mautic API credentials
+    'clientSecret' => '',       // Client Secret from Mautic API credentials
+];
+
+// If you have a stored access token, you can pass it to avoid requesting a new one
+// $settings['accessToken'] = 'your_stored_access_token';
+// $settings['accessTokenExpires'] = 1234567890; // Unix timestamp
+
+$initAuth = new ApiAuth();
+$auth     = $initAuth->newAuth($settings, $settings['AuthMethod']);
+
+// Request a new access token if needed
+if (!$auth->isAuthorized()) {
+    $auth->requestAccessToken();
+}
+
+// Check if token was updated (for caching purposes)
+if ($auth->accessTokenUpdated()) {
+    $tokenData = $auth->getAccessTokenData();
+    // Store $tokenData['access_token'] and $tokenData['expires'] for future use
+}
+
+// The auth object is now ready to use with API contexts
 ```
 
 ## API Requests
@@ -325,9 +390,16 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href="https://webmecanik.com"><img src="https://avatars.githubusercontent.com/u/462477?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Zdeno Kuzmany</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=kuzmany" title="Code">💻</a></td>
-      <td align="center"><a href="https://github.com/dlopez-akalam"><img src="https://avatars.githubusercontent.com/u/6641589?v=4?s=100" width="100px;" alt=""/><br /><sub><b>dlopez-akalam</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=dlopez-akalam" title="Code">💻</a></td>
-      <td align="center"><a href="https://github.com/mollux"><img src="https://avatars.githubusercontent.com/u/3983285?v=4?s=100" width="100px;" alt=""/><br /><sub><b>mollux</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=mollux" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://webmecanik.com"><img src="https://avatars.githubusercontent.com/u/462477?v=4?s=100" width="100px;" alt="Zdeno Kuzmany"/><br /><sub><b>Zdeno Kuzmany</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=kuzmany" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/dlopez-akalam"><img src="https://avatars.githubusercontent.com/u/6641589?v=4?s=100" width="100px;" alt="dlopez-akalam"/><br /><sub><b>dlopez-akalam</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=dlopez-akalam" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/mollux"><img src="https://avatars.githubusercontent.com/u/3983285?v=4?s=100" width="100px;" alt="mollux"/><br /><sub><b>mollux</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=mollux" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/LadySolveig"><img src="https://avatars.githubusercontent.com/u/64533137?v=4?s=100" width="100px;" alt="Martina  Scholz"/><br /><sub><b>Martina  Scholz</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=LadySolveig" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://johnlinhart.com"><img src="https://avatars.githubusercontent.com/u/1235442?v=4?s=100" width="100px;" alt="John Linhart"/><br /><sub><b>John Linhart</b></sub></a><br /><a href="https://github.com/mautic/api-library/pulls?q=is%3Apr+reviewed-by%3Aescopecz" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Rocksheep"><img src="https://avatars.githubusercontent.com/u/1311371?v=4?s=100" width="100px;" alt="Marinus van Velzen"/><br /><sub><b>Marinus van Velzen</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=Rocksheep" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://pierre.ammeloot.fr"><img src="https://avatars.githubusercontent.com/u/4603318?v=4?s=100" width="100px;" alt="Pierre Ammeloot"/><br /><sub><b>Pierre Ammeloot</b></sub></a><br /><a href="#userTesting-PierreAmmeloot" title="User Testing">📓</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://matbcvo.github.io"><img src="https://avatars.githubusercontent.com/u/1006437?v=4?s=100" width="100px;" alt="Martin Vooremäe"/><br /><sub><b>Martin Vooremäe</b></sub></a><br /><a href="https://github.com/mautic/api-library/commits?author=matbcvo" title="Code">💻</a> <a href="https://github.com/mautic/api-library/commits?author=matbcvo" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>

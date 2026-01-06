@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -48,7 +49,7 @@ class EmailsTest extends MauticApiTestCase
                                     'field'    => 'email',
                                     'object'   => 'lead',
                                     'type'     => 'email',
-                                    'filter'   => 'Prague',
+                                    'filter'   => null,
                                     'display'  => null,
                                     'operator' => '!empty',
                                 ],
@@ -138,7 +139,7 @@ class EmailsTest extends MauticApiTestCase
     {
         $response = $this->api->edit(10000, $this->testPayload);
 
-        //there should be an error as the email shouldn't exist
+        // there should be an error as the email shouldn't exist
         $this->assertTrue(isset($response['errors'][0]), $response['errors'][0]['message']);
 
         // Unset the emailType, 'template' must be the default value
@@ -158,7 +159,7 @@ class EmailsTest extends MauticApiTestCase
 
         $this->assertErrors($response);
 
-        //now delete the email
+        // now delete the email
         $response = $this->api->delete($response[$this->api->itemName()]['id']);
         $this->assertErrors($response);
     }
@@ -187,7 +188,7 @@ class EmailsTest extends MauticApiTestCase
         $this->assertSame($response[$this->api->itemName()]['lists'][0]['id'], $segment2['id']);
         $this->assertequals(count($response[$this->api->itemName()]['lists']), 1);
 
-        //now delete the email
+        // now delete the email
         $response = $this->api->delete($response[$this->api->itemName()]['id']);
         $this->assertErrors($response);
         $response = $segmentApi->delete($segment1['id']);

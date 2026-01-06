@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -10,6 +11,8 @@
 
 namespace Mautic\Tests\Api;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
 use Mautic\Api\Contacts;
 use Mautic\QueryBuilder\QueryBuilder;
 
@@ -193,12 +196,9 @@ class ContactsTest extends AbstractCustomFieldsTest
     public function testGetActivityAdvanced()
     {
         // Ensure a page hit exists
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $this->config['baseUrl'].'/mtracking.gif?url='.urlencode('http://mautic.org'));
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-        curl_exec($curl);
+        $client  = new Client(['verify' => false]);
+        $request = new Request('GET', $this->config['baseUrl'].'/mtracking.gif?url='.urlencode('http://mautic.org'));
+        $client->send($request);
 
         $response = $this->api->getActivity('', ['page.hit']);
         $this->assertEventResponse($response, ['page.hit']);
@@ -325,7 +325,7 @@ class ContactsTest extends AbstractCustomFieldsTest
         $pointsSet   = 5;
         $response    = $this->api->edit(10000, $this->testPayload);
 
-        //there should be an error as the contact shouldn't exist
+        // there should be an error as the contact shouldn't exist
         $this->assertTrue(isset($response['errors'][0]), $response['errors'][0]['message']);
 
         $response = $this->api->create($this->testPayload);
@@ -343,7 +343,7 @@ class ContactsTest extends AbstractCustomFieldsTest
         $this->assertErrors($response);
         $this->assertSame($response[$this->api->itemName()]['points'], $pointsSet, 'Points were not set correctly');
 
-        //now delete the contact
+        // now delete the contact
         $response = $this->api->delete($response[$this->api->itemName()]['id']);
         $this->assertErrors($response);
     }
@@ -360,7 +360,7 @@ class ContactsTest extends AbstractCustomFieldsTest
             ]
         );
 
-        //there should be an error as the country does not exist
+        // there should be an error as the country does not exist
         $this->assertTrue(isset($response['errors'][0]), $response['errors'][0]['message']);
     }
 
@@ -394,7 +394,7 @@ class ContactsTest extends AbstractCustomFieldsTest
 
         $response = $this->api->get($contact['id']);
         $this->assertErrors($response);
-        $this->assertSame($response[$this->api->itemName()]['points'], ($contact['points'] + $pointToAdd), 'Points were not added correctly');
+        $this->assertSame($response[$this->api->itemName()]['points'], $contact['points'] + $pointToAdd, 'Points were not added correctly');
 
         $response = $this->api->delete($contact['id']);
         $this->assertErrors($response);
@@ -414,7 +414,144 @@ class ContactsTest extends AbstractCustomFieldsTest
 
         $response = $this->api->get($contact['id']);
         $this->assertErrors($response);
-        $this->assertSame($response[$this->api->itemName()]['points'], ($contact['points'] - $pointToSub), 'Points were not subtracted correctly');
+        $this->assertSame($response[$this->api->itemName()]['points'], $contact['points'] - $pointToSub, 'Points were not subtracted correctly');
+
+        $response = $this->api->delete($contact['id']);
+        $this->assertErrors($response);
+    }
+
+    public function testGetPointGroupScores(): void
+    {
+        $response = $this->api->create($this->testPayload);
+        $this->assertErrors($response);
+        $contact = $response[$this->api->itemName()];
+
+        // test empty group points list
+        $response = $this->api->getPointGroupScores($contact['id']);
+        $this->assertErrors($response);
+        $this->assertSame(0, $response['total']);
+        $this->assertIsArray($response['groupScores']);
+        $this->assertEmpty($response['groupScores']);
+
+        // add score
+        $pointsToAdd   = 5;
+        $pointGroupApi = $this->getContext('pointGroups');
+        $response      = $pointGroupApi->create(['name' => 'Group A']);
+        $pointGroup    = $response[$pointGroupApi->itemName()];
+        $response      = $this->api->addPointGroupScore($contact['id'], $pointGroup['id'], $pointsToAdd);
+        $this->assertErrors($response);
+        $this->assertNotEmpty($response['groupScore'], 'Adding point group score to a contact with ID ='.$contact['id'].' was not successful');
+
+        // test get point group scores list
+        $response = $this->api->getPointGroupScores($contact['id']);
+        $this->assertErrors($response);
+        $this->assertSame(1, $response['total']);
+        $this->assertIsArray($response['groupScores']);
+        $this->assertCount(1, $response['groupScores']);
+        $this->assertSame(5, $response['groupScores'][0]['score']);
+        $this->assertSame($pointGroup['id'], $response['groupScores'][0]['group']['id']);
+        $this->assertSame($pointGroup['name'], $response['groupScores'][0]['group']['name']);
+
+        $response = $this->api->delete($contact['id']);
+        $this->assertErrors($response);
+    }
+
+    public function testAddPointGroupScore(): void
+    {
+        $pointsToAdd   = 5;
+        $pointGroupApi = $this->getContext('pointGroups');
+        $response      = $pointGroupApi->create(['name' => 'Group A']);
+        $pointGroup    = $response[$pointGroupApi->itemName()];
+
+        $response = $this->api->create($this->testPayload);
+        $this->assertErrors($response);
+        $contact = $response[$this->api->itemName()];
+
+        $response = $this->api->addPointGroupScore($contact['id'], $pointGroup['id'], $pointsToAdd);
+        $this->assertErrors($response);
+        $this->assertTrue(!empty($response['groupScore']), 'Adding point group score to a contact with ID ='.$contact['id'].' was not successful');
+
+        $response = $this->api->getPointGroupScore($contact['id'], $pointGroup['id']);
+        $this->assertErrors($response);
+        $this->assertSame($response['groupScore']['score'], $pointsToAdd, 'Point group score was not added accurately');
+
+        $response = $this->api->delete($contact['id']);
+        $this->assertErrors($response);
+    }
+
+    public function testSubtractPointGroupScore(): void
+    {
+        $pointsToSubtract = 3;
+        $pointGroupApi    = $this->getContext('pointGroups');
+        $response         = $pointGroupApi->create(['name' => 'Group B']);
+        $pointGroup       = $response[$pointGroupApi->itemName()];
+
+        $response = $this->api->create($this->testPayload);
+        $this->assertErrors($response);
+        $contact = $response[$this->api->itemName()];
+
+        $response = $this->api->setPointGroupScore($contact['id'], $pointGroup['id'], 10);
+        $this->assertErrors($response);
+
+        $response = $this->api->subtractPointGroupScore($contact['id'], $pointGroup['id'], $pointsToSubtract);
+        $this->assertErrors($response);
+        $this->assertTrue(!empty($response['groupScore']), 'Subtracting point group score from a contact with ID ='.$contact['id'].' was not successful');
+
+        $response = $this->api->getPointGroupScore($contact['id'], $pointGroup['id']);
+        $this->assertErrors($response);
+        $this->assertSame($response['groupScore']['score'], 10 - $pointsToSubtract, 'Point group score was not subtracted accurately');
+
+        $response = $this->api->delete($contact['id']);
+        $this->assertErrors($response);
+    }
+
+    public function testMultiplyPointGroupScore(): void
+    {
+        $multiplier    = 2;
+        $pointGroupApi = $this->getContext('pointGroups');
+        $response      = $pointGroupApi->create(['name' => 'Group C']);
+        $pointGroup    = $response[$pointGroupApi->itemName()];
+
+        $response = $this->api->create($this->testPayload);
+        $this->assertErrors($response);
+        $contact = $response[$this->api->itemName()];
+
+        $response = $this->api->setPointGroupScore($contact['id'], $pointGroup['id'], 5);
+        $this->assertErrors($response);
+
+        $response = $this->api->multiplyPointGroupScore($contact['id'], $pointGroup['id'], $multiplier);
+        $this->assertErrors($response);
+        $this->assertTrue(!empty($response['groupScore']), 'Multiplying point group score for a contact with ID ='.$contact['id'].' was not successful');
+
+        $response = $this->api->getPointGroupScore($contact['id'], $pointGroup['id']);
+        $this->assertErrors($response);
+        $this->assertSame($response['groupScore']['score'], 5 * $multiplier, 'Point group score was not multiplied accurately');
+
+        $response = $this->api->delete($contact['id']);
+        $this->assertErrors($response);
+    }
+
+    public function testDividePointGroupScore(): void
+    {
+        $divisor       = 4;
+        $pointGroupApi = $this->getContext('pointGroups');
+        $response      = $pointGroupApi->create(['name' => 'Group D']);
+        $pointGroup    = $response[$pointGroupApi->itemName()];
+
+        $response = $this->api->create($this->testPayload);
+        $this->assertErrors($response);
+        $contact = $response[$this->api->itemName()];
+
+        $response = $this->api->setPointGroupScore($contact['id'], $pointGroup['id'], 20);
+        $this->assertErrors($response);
+
+        $response = $this->api->dividePointGroupScore($contact['id'], $pointGroup['id'], $divisor);
+        $this->assertErrors($response);
+        $this->assertTrue(!empty($response['groupScore']), 'Dividing point group score for a contact with ID ='.$contact['id'].' was not successful');
+
+        $response = $this->api->getPointGroupScore($contact['id'], $pointGroup['id']);
+        $this->assertErrors($response);
+        $this->assertSame($response['groupScore']['score'], 20 / $divisor, 'Point group score was not divided accurately');
 
         $response = $this->api->delete($contact['id']);
         $this->assertErrors($response);

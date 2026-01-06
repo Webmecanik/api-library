@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -12,10 +13,17 @@ namespace Mautic\Tests\Api;
 
 class FilesTest extends MauticApiTestCase
 {
+    protected $mediaFolder = 'media';
+
     public function setUp(): void
     {
         $this->api                 = $this->getContext('files');
-        $this->testPayload['file'] = dirname(__DIR__).'/'.'mauticlogo.png';
+        $this->testPayload['file'] = dirname(__DIR__).'/mauticlogo.png';
+
+        if ('4' == $this->mauticVersion) {
+            $this->mediaFolder = 'assets';
+        }
+
         $this->assertTrue(file_exists($this->testPayload['file']), 'A file for test at '.$this->testPayload['file'].' does not exist.');
     }
 
@@ -34,15 +42,19 @@ class FilesTest extends MauticApiTestCase
 
     public function testGetListSubdir()
     {
-        $this->api->setFolder('images/flags');
+        $this->api->setFolder('images/test_api_dir');
+        $createResponse = $this->api->create($this->testPayload);
+
         $response = $this->api->getList();
         $this->assertTrue(isset($response['files']));
         $this->assertErrors($response);
+
+        $this->api->delete($createResponse['file']['name']);
     }
 
-    public function testGetListAssetFiles()
+    public function testGetListMediaFiles()
     {
-        $this->api->setFolder('assets');
+        $this->api->setFolder($this->mediaFolder);
         $response   = $this->api->getList();
         $this->assertErrors($response);
     }
@@ -80,9 +92,9 @@ class FilesTest extends MauticApiTestCase
         $this->assertSuccess($response);
     }
 
-    public function testCreateAndDeleteAsset()
+    public function testCreateAndDeleteMedia()
     {
-        $this->api->setFolder('assets');
+        $this->api->setFolder($this->mediaFolder);
         $response = $this->api->create($this->testPayload);
         $this->assertPayload($response);
 

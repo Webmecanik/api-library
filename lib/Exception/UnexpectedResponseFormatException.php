@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -20,17 +21,14 @@ class UnexpectedResponseFormatException extends AbstractApiException
     /**
      * {@inheritdoc}
      */
-    const DEFAULT_MESSAGE = 'The response returned is in an unexpected format.';
+    public const DEFAULT_MESSAGE = 'The response returned is in an unexpected format.';
 
     /**
      * @var Response
      */
     private $response;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct(Response $response, $message = '', $code = 500, \Exception $previous = null)
+    public function __construct(Response $response, $message = '', $code = 500, ?\Exception $previous = null)
     {
         $this->response = $response;
 

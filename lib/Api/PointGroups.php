@@ -12,23 +12,19 @@
 namespace Mautic\Api;
 
 /**
- * Notifications Context.
+ * Points Context.
  */
-class Notifications extends Api
+class PointGroups extends Api
 {
-    protected $endpoint = 'notifications';
+    protected $endpoint = 'points/groups';
 
-    protected $listName = 'notifications';
+    protected $listName = 'pointGroups';
 
-    protected $itemName = 'notification';
+    protected $itemName = 'pointGroup';
 
     protected $searchCommands = [
         'ids',
         'is:published',
         'is:unpublished',
-        'is:mine',
-        'is:uncategorized',
-        'category',
-        'lang',
     ];
 }

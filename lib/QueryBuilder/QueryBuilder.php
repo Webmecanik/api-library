@@ -34,7 +34,7 @@ class QueryBuilder
     protected static $whereBuilder;
 
     /**
-     * @param $column
+     * @param string $column
      */
     public function addSelect($column)
     {
@@ -42,7 +42,7 @@ class QueryBuilder
     }
 
     /**
-     * @param        $column
+     * @param string $column
      * @param string $dir
      */
     public function addOrder($column, $dir = 'asc')
@@ -53,10 +53,7 @@ class QueryBuilder
         ];
     }
 
-    /**
-     * @param WhereBuilder $whereBuilder
-     */
-    public function addWhere(WhereBuilder $whereBuilder = null)
+    public function addWhere(?WhereBuilder $whereBuilder = null)
     {
         if (null === $whereBuilder) {
             if (null === self::$whereBuilder) {

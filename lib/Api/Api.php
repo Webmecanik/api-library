@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -14,6 +15,7 @@ use Mautic\Auth\ApiAuth;
 use Mautic\Auth\AuthInterface;
 use Mautic\QueryBuilder\QueryBuilder;
 use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -22,6 +24,8 @@ use Psr\Log\NullLogger;
  */
 class Api implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     /**
      * Used by unit testing to force use of BC endpoints.
      *
@@ -91,11 +95,6 @@ class Api implements LoggerAwareInterface
     private $auth;
 
     /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
      * @param string $baseUrl
      */
     public function __construct(AuthInterface $auth, $baseUrl = '')
@@ -117,18 +116,6 @@ class Api implements LoggerAwareInterface
         }
 
         return $this->logger;
-    }
-
-    /**
-     * Sets a logger.
-     *
-     * @return $this
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-
-        return $this;
     }
 
     /**
@@ -198,7 +185,7 @@ class Api implements LoggerAwareInterface
     /**
      * Make the API request.
      *
-     * @param        $endpoint
+     * @param string $endpoint
      * @param string $method
      *
      * @return array
@@ -244,12 +231,12 @@ class Api implements LoggerAwareInterface
 
             if (false === strpos($url, 'http')) {
                 $error = [
-                'code'    => 500,
-                'message' => sprintf(
-                    'URL is incomplete.  Please use %s, set the base URL as the third argument to $MauticApi->newApi(), or make $endpoint a complete URL.',
-                    __CLASS__.'setBaseUrl()'
-                ),
-            ];
+                    'code'    => 500,
+                    'message' => sprintf(
+                        'URL is incomplete.  Please use %s, set the base URL as the third argument to $MauticApi->newApi(), or make $endpoint a complete URL.',
+                        __CLASS__.'setBaseUrl()'
+                    ),
+                ];
             } else {
                 try {
                     $settings = [];
@@ -263,36 +250,35 @@ class Api implements LoggerAwareInterface
                     if (!is_array($response)) {
                         $this->getLogger()->warning($response);
 
-                        //assume an error
+                        // assume an error
                         $error = [
-                        'code'    => 500,
-                        'message' => $response,
-                    ];
+                            'code'    => 500,
+                            'message' => $response,
+                        ];
                     }
                 } catch (\Exception $e) {
                     $this->getLogger()->error('Failed connecting to Mautic API: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
                     $error = [
-                    'code'    => $e->getCode(),
-                    'message' => $e->getMessage(),
-                ];
+                        'code'    => $e->getCode(),
+                        'message' => $e->getMessage(),
+                    ];
                 }
             }
 
             if (!empty($error)) {
                 return [
-                'errors' => [$error],
-            ];
+                    'errors' => [$error],
+                ];
             } elseif (!empty($response['errors'])) {
                 $this->getLogger()->error('Mautic API returned errors: '.var_export($response['errors'], true));
             }
 
             // Ensure a code is present in the error array
             if (!empty($response['errors'])) {
-                $info = $this->auth->getResponseInfo();
                 foreach ($response['errors'] as $key => $error) {
                     if (!isset($response['errors'][$key]['code'])) {
-                        $response['errors'][$key]['code'] = $info['http_code'];
+                        $response['errors'][$key]['code'] = $this->auth->getResponse()->getStatusCode();
                     }
                 }
             }
@@ -306,16 +292,6 @@ class Api implements LoggerAwareInterface
         }
 
         return $response;
-    }
-
-    /**
-     * Returns HTTP response info.
-     *
-     * @return array
-     */
-    public function getResponseInfo()
-    {
-        return $this->auth->getResponseInfo();
     }
 
     /**
@@ -336,10 +312,10 @@ class Api implements LoggerAwareInterface
      */
     public function getMauticVersion()
     {
-        $headers = $this->auth->getResponseHeaders();
+        $headers = array_change_key_case($this->auth->getResponseHeaders(), CASE_LOWER);
 
-        if (isset($headers['Mautic-Version'])) {
-            return $headers['Mautic-Version'];
+        if (isset($headers['mautic-version'])) {
+            return $headers['mautic-version'];
         }
 
         return null;
@@ -358,7 +334,7 @@ class Api implements LoggerAwareInterface
     }
 
     /**
-     * @param $id
+     * @param int $id
      *
      * @return array|bool
      */
@@ -496,7 +472,7 @@ class Api implements LoggerAwareInterface
     /**
      * Delete an item.
      *
-     * @param $id
+     * @param int $id
      *
      * @return array|mixed
      */
@@ -509,8 +485,6 @@ class Api implements LoggerAwareInterface
 
     /**
      * Delete a batch of items.
-     *
-     * @param $ids
      *
      * @return array|mixed
      */
@@ -543,7 +517,7 @@ class Api implements LoggerAwareInterface
     /**
      * Verify that a default endpoint is supported by the API.
      *
-     * @param $action
+     * @param string $action
      *
      * @return bool
      */

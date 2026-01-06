@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -18,5 +19,5 @@ class ActionNotSupportedException extends AbstractApiException
     /**
      * {@inheritdoc}
      */
-    const DEFAULT_MESSAGE = 'Action is not supported at this time.';
+    public const DEFAULT_MESSAGE = 'Action is not supported at this time.';
 }

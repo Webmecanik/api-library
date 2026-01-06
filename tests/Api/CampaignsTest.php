@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -157,7 +158,7 @@ class CampaignsTest extends MauticApiTestCase
                         ],
                     ],
                     [
-                        'sourceId' => 'new_43', /// Event ID will be replaced on /new
+                        'sourceId' => 'new_43', // / Event ID will be replaced on /new
                         'targetId' => 'new_44', // Event ID will be replaced on /new
                         'anchors'  => [
                             'source' => 'yes',
@@ -224,7 +225,7 @@ class CampaignsTest extends MauticApiTestCase
     {
         $response  = $this->api->edit(10000, $this->testPayload);
 
-        //there should be an error as the campaign shouldn't exist
+        // there should be an error as the campaign shouldn't exist
         $this->assertTrue(isset($response['errors']), $response['errors'][0]['message']);
 
         $this->setUpPayloadClass();
@@ -246,7 +247,7 @@ class CampaignsTest extends MauticApiTestCase
             $this->assertEquals($event['name'], 'Event Name Modified');
         }
 
-        //now delete the campaign
+        // now delete the campaign
         $response = $this->api->delete($campaign['id']);
         $this->assertErrors($response);
         $this->clearPayloadItems();
@@ -351,7 +352,7 @@ class CampaignsTest extends MauticApiTestCase
         $this->assertEquals($response[$this->api->itemName()]['lists'][0]['id'], $newSegmentsArray[0]['id']);
         $this->assertEquals($response[$this->api->itemName()]['lists'][0]['name'], $newSegmentsArray[0]['name']);
 
-        //now delete the form
+        // now delete the form
         $response = $this->api->delete($response[$this->api->itemName()]['id']);
         $this->assertErrors($response);
         $this->clearPayloadItems();
@@ -471,7 +472,7 @@ class CampaignsTest extends MauticApiTestCase
                 $date = new \DateTime($log['triggerDate'], new \DateTimeZone('UTC'));
                 $this->assertEquals($log['triggerDate'], $date->format('c'));
             } else {
-                $this->assertFalse(false, 'Event ID not recognized in the log.', var_export($event, true));
+                $this->fail('Event ID not recognized in the log.'.var_export($event, true));
             }
         }
 

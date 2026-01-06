@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -25,6 +26,7 @@
 
 namespace Mautic\Tests\Api;
 
+use GuzzleHttp\Psr7\Response as HttpResponse;
 use Mautic\Exception\ActionNotSupportedException;
 use Mautic\Exception\ContextNotFoundException;
 use Mautic\Exception\IncorrectParametersReturnedException;
@@ -34,7 +36,7 @@ use Mautic\Response;
 
 class ExceptionsTest extends MauticApiTestCase
 {
-    const CUSTOM_ERROR_MESSAGE = 'This is a Custom Error Exception';
+    public const CUSTOM_ERROR_MESSAGE = 'This is a Custom Error Exception';
 
     public function testContextNotFoundException()
     {
@@ -69,7 +71,7 @@ class ExceptionsTest extends MauticApiTestCase
     public function testUnexpectedResponseFormatException()
     {
         $expected  = 'The response returned is in an unexpected format.'."\n\nResponse: ";
-        $exception = new UnexpectedResponseFormatException(new Response('', ['http_code' => 200]));
+        $exception = new UnexpectedResponseFormatException(new Response(new HttpResponse()));
         $this->assertEquals($expected, $exception->getMessage(), 'This should return "'.$expected.'"');
         $this->assertEquals(500, $exception->getCode());
     }
@@ -77,14 +79,14 @@ class ExceptionsTest extends MauticApiTestCase
     public function testUnexpectedResponseFormatExceptionCustomMessage()
     {
         $expected  = self::CUSTOM_ERROR_MESSAGE."\n\nResponse: ";
-        $exception = new UnexpectedResponseFormatException(new Response('', ['http_code' => 200]), self::CUSTOM_ERROR_MESSAGE);
+        $exception = new UnexpectedResponseFormatException(new Response(new HttpResponse()), self::CUSTOM_ERROR_MESSAGE);
         $this->assertEquals($expected, $exception->getMessage(), 'This should return "'.$expected.'"');
         $this->assertEquals(500, $exception->getCode());
     }
 
     public function testUnexpectedResponseFormatExceptionCustomCode()
     {
-        $exception = new UnexpectedResponseFormatException(new Response('', ['http_code' => 200]), null, 404);
+        $exception = new UnexpectedResponseFormatException(new Response(new HttpResponse()), null, 404);
         $this->assertEquals(404, $exception->getCode());
     }
 

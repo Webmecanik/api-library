@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -18,31 +19,22 @@ class Contacts extends Api
     /**
      * Contact unsubscribed themselves.
      */
-    const UNSUBSCRIBED = 1;
+    public const UNSUBSCRIBED = 1;
 
     /**
      * Contact was unsubscribed due to an unsuccessful send.
      */
-    const BOUNCED = 2;
+    public const BOUNCED = 2;
 
     /**
      * Contact was manually unsubscribed by user.
      */
-    const MANUAL = 3;
+    public const MANUAL = 3;
 
-    /**
-     * {@inheritdoc}
-     */
     protected $endpoint = 'contacts';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $listName = 'contacts';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $itemName = 'contact';
 
     /**
@@ -53,9 +45,6 @@ class Contacts extends Api
         'contacts/(.*?)/dnc/(.*?)/remove' => 'contacts/$1/dnc/remove/$2', // 2.6.0
     ];
 
-    /**
-     * {@inheritdoc}
-     */
     protected $searchCommands = [
         'ids',
         'is:anonymous',
@@ -121,13 +110,11 @@ class Contacts extends Api
     /**
      * Get a list of contact activity events for all contacts.
      *
-     * @param int       $id         Contact ID
-     * @param string    $search
-     * @param string    $orderBy
-     * @param string    $orderByDir
-     * @param int       $page
-     * @param \DateTime $dateFrom
-     * @param \DateTime $dateTo
+     * @param int    $id         Contact ID
+     * @param string $search
+     * @param string $orderBy
+     * @param string $orderByDir
+     * @param int    $page
      *
      * @return array|mixed
      */
@@ -139,8 +126,8 @@ class Contacts extends Api
         $orderBy = '',
         $orderByDir = 'ASC',
         $page = 1,
-        \DateTime $dateFrom = null,
-        \DateTime $dateTo = null
+        ?\DateTime $dateFrom = null,
+        ?\DateTime $dateTo = null,
     ) {
         return $this->fetchActivity('/'.$id.'/activity', $search, $includeEvents, $excludeEvents, $orderBy, $orderByDir, $page, $dateFrom, $dateTo);
     }
@@ -149,12 +136,10 @@ class Contacts extends Api
      * Get a list of contact engagement events.
      * Not related to a specific contact ID.
      *
-     * @param string    $search
-     * @param string    $orderBy
-     * @param string    $orderByDir
-     * @param int       $page
-     * @param \DateTime $dateFrom
-     * @param \DateTime $dateTo
+     * @param string $search
+     * @param string $orderBy
+     * @param string $orderByDir
+     * @param int    $page
      *
      * @return array|mixed
      */
@@ -165,8 +150,8 @@ class Contacts extends Api
         $orderBy = '',
         $orderByDir = 'ASC',
         $page = 1,
-        \DateTime $dateFrom = null,
-        \DateTime $dateTo = null
+        ?\DateTime $dateFrom = null,
+        ?\DateTime $dateTo = null,
     ) {
         return $this->fetchActivity('/activity', $search, $includeEvents, $excludeEvents, $orderBy, $orderByDir, $page, $dateFrom, $dateTo);
     }
@@ -174,13 +159,11 @@ class Contacts extends Api
     /**
      * Get a list of contact activity events for all contacts.
      *
-     * @param string    $path       of the URL after the endpoint
-     * @param string    $search
-     * @param string    $orderBy
-     * @param string    $orderByDir
-     * @param int       $page
-     * @param \DateTime $dateFrom
-     * @param \DateTime $dateTo
+     * @param string $path       of the URL after the endpoint
+     * @param string $search
+     * @param string $orderBy
+     * @param string $orderByDir
+     * @param int    $page
      *
      * @return array|mixed
      */
@@ -192,8 +175,8 @@ class Contacts extends Api
         $orderBy = '',
         $orderByDir = 'ASC',
         $page = 1,
-        \DateTime $dateFrom = null,
-        \DateTime $dateTo = null
+        ?\DateTime $dateFrom = null,
+        ?\DateTime $dateTo = null,
     ) {
         $parameters = [
             'filters' => [
@@ -276,7 +259,7 @@ class Contacts extends Api
     /**
      * Get a list of smart segments the contact is in.
      *
-     * @param $id
+     * @param int $id
      *
      * @return array|mixed
      */
@@ -288,7 +271,7 @@ class Contacts extends Api
     /**
      * Get a list of companies the contact is in.
      *
-     * @param $id
+     * @param int $id
      *
      * @return array|mixed
      */
@@ -300,7 +283,7 @@ class Contacts extends Api
     /**
      * Get a list of campaigns the contact is in.
      *
-     * @param $id
+     * @param int $id
      *
      * @return array|mixed
      */
@@ -315,8 +298,6 @@ class Contacts extends Api
      * @param int   $id
      * @param int   $points
      * @param array $parameters 'eventName' and 'actionName'
-     *
-     * @return mixed
      */
     public function addPoints($id, $points, array $parameters = [])
     {
@@ -329,12 +310,76 @@ class Contacts extends Api
      * @param int   $id
      * @param int   $points
      * @param array $parameters 'eventName' and 'actionName'
-     *
-     * @return mixed
      */
     public function subtractPoints($id, $points, array $parameters = [])
     {
         return $this->makeRequest('contacts/'.$id.'/points/minus/'.$points, $parameters, 'POST');
+    }
+
+    /**
+     * Get all point group scores associated with contact.
+     */
+    public function getPointGroupScores(int $contactId): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups');
+    }
+
+    /**
+     * Get the contact score for a specified point group.
+     */
+    public function getPointGroupScore(int $contactId, int $groupId): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId);
+    }
+
+    /**
+     * Increase the score of the contact point group.
+     *
+     * @param array $parameters 'eventName' and 'actionName'
+     */
+    public function addPointGroupScore(int $contactId, int $groupId, int $points, array $parameters = []): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId.'/plus/'.$points, $parameters, 'POST');
+    }
+
+    /**
+     * Decrease the score of the contact point group.
+     *
+     * @param array $parameters 'eventName' and 'actionName'
+     */
+    public function subtractPointGroupScore(int $contactId, int $groupId, int $points, array $parameters = []): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId.'/minus/'.$points, $parameters, 'POST');
+    }
+
+    /**
+     * Multiply the score of the contact point group.
+     *
+     * @param array $parameters 'eventName' and 'actionName'
+     */
+    public function multiplyPointGroupScore(int $contactId, int $groupId, int $value, array $parameters = []): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId.'/times/'.$value, $parameters, 'POST');
+    }
+
+    /**
+     * Divide the score of the contact point group.
+     *
+     * @param array $parameters 'eventName' and 'actionName'
+     */
+    public function dividePointGroupScore(int $contactId, int $groupId, int $value, array $parameters = []): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId.'/divide/'.$value, $parameters, 'POST');
+    }
+
+    /**
+     * Set the score of the contact point group.
+     *
+     * @param array $parameters 'eventName' and 'actionName'
+     */
+    public function setPointGroupScore(int $contactId, int $groupId, int $points, array $parameters = []): array
+    {
+        return $this->makeRequest('contacts/'.$contactId.'/points/groups/'.$groupId.'/set/'.$points, $parameters, 'POST');
     }
 
     /**
@@ -366,8 +411,6 @@ class Contacts extends Api
      *
      * @param int    $id
      * @param string $channel
-     *
-     * @return mixed
      */
     public function removeDnc($id, $channel = 'email')
     {
@@ -383,8 +426,6 @@ class Contacts extends Api
      *
      * @param int   $id
      * @param array $utmTags
-     *
-     * @return mixed
      */
     public function addUtm($id, $utmTags)
     {
@@ -396,7 +437,28 @@ class Contacts extends Api
     }
 
     /**
-     * Create a new item (if supported).
+     * Remove UTM Tags from a Contact.
+     *
+     * @param int $id
+     * @param int $utmId
+     */
+    public function removeUtm($id, $utmId)
+    {
+        return $this->makeRequest(
+            'contacts/'.$id.'/utm/'.$utmId.'/remove',
+            [],
+            'POST'
+        );
+    }
+
+    /**
+     * Create a new contact.
+     *
+     * Overrides parent to support additional query arguments for plugins
+     * like Custom Objects (e.g., ['includeCustomObjects' => true]).
+     *
+     * @param array $parameters     Contact data
+     * @param array $queryArguments Optional query parameters (e.g., for Custom Objects)
      *
      * @return array|mixed
      */
@@ -411,7 +473,13 @@ class Contacts extends Api
     }
 
     /**
-     * Create a batch of new items.
+     * Create a batch of new contacts.
+     *
+     * Overrides parent to support additional query arguments for plugins
+     * like Custom Objects (e.g., ['includeCustomObjects' => true]).
+     *
+     * @param array $parameters     Array of contact data
+     * @param array $queryArguments Optional query parameters (e.g., for Custom Objects)
      *
      * @return array|mixed
      */
@@ -423,22 +491,5 @@ class Contacts extends Api
         return (true === $supported)
             ? $this->makeRequest($this->endpoint.'/batch/new'.$queryAppend, $parameters, 'POST')
             : $supported;
-    }
-
-    /**
-     * Remove UTM Tags from a Contact.
-     *
-     * @param int $id
-     * @param int $utmId
-     *
-     * @return mixed
-     */
-    public function removeUtm($id, $utmId)
-    {
-        return $this->makeRequest(
-            'contacts/'.$id.'/utm/'.$utmId.'/remove',
-            [],
-            'POST'
-        );
     }
 }

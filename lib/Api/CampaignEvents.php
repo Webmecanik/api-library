@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2016 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -15,19 +16,10 @@ namespace Mautic\Api;
  */
 class CampaignEvents extends Api
 {
-    /**
-     * {@inheritdoc}
-     */
     protected $endpoint = 'campaigns/events';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $listName = 'events';
 
-    /**
-     * {@inheritdoc}
-     */
     protected $itemName = 'event';
 
     /**
@@ -41,7 +33,7 @@ class CampaignEvents extends Api
     /**
      * Get contact events across all campaigns.
      *
-     * @param        $contactId
+     * @param int    $contactId
      * @param string $search
      * @param int    $start
      * @param int    $limit
@@ -68,8 +60,8 @@ class CampaignEvents extends Api
     /**
      * Get contact events for a single campaign.
      *
-     * @param        $campaignId
-     * @param        $contactId
+     * @param int    $campaignId
+     * @param int    $contactId
      * @param string $search
      * @param int    $start
      * @param int    $limit
@@ -96,9 +88,8 @@ class CampaignEvents extends Api
     /**
      * Edit or schedule a campaign event for a specific contact.
      *
-     * @param $contactId
-     * @param $eventId
-     * @param $parameters
+     * @param int $contactId
+     * @param int $eventId
      *
      * @return array|mixed
      */

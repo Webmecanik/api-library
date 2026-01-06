@@ -24,7 +24,7 @@ class WhereBuilder
     /**
      * @var null
      */
-    protected $composite = null;
+    protected $composite;
 
     /**
      * WhereBuilder constructor.
@@ -45,8 +45,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -58,8 +57,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -71,8 +69,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -84,8 +81,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -97,8 +93,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -110,8 +105,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -123,8 +117,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -136,8 +129,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val
+     * @param string $col
      *
      * @return $this
      */
@@ -149,7 +141,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -161,7 +153,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -173,9 +165,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val1
-     * @param $val2
+     * @param string $col
      *
      * @return $this
      */
@@ -187,9 +177,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
-     * @param $val1
-     * @param $val2
+     * @param string $col
      *
      * @return $this
      */
@@ -201,7 +189,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -213,7 +201,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -225,7 +213,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -237,7 +225,7 @@ class WhereBuilder
     }
 
     /**
-     * @param $col
+     * @param string $col
      *
      * @return $this
      */
@@ -298,9 +286,9 @@ class WhereBuilder
     }
 
     /**
-     * @param      $col
-     * @param      $expr
-     * @param null $val
+     * @param string $col
+     * @param string $expr
+     * @param null   $val
      */
     private function addClause($col, $expr, $val = null)
     {
@@ -312,8 +300,8 @@ class WhereBuilder
     }
 
     /**
-     * @param $composite
-     * @param $clauses
+     * @param string $composite
+     * @param array  $clauses
      *
      * @return $this|WhereBuilder
      */

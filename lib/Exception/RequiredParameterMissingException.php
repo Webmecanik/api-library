@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright   2014 Mautic, NP. All rights reserved.
  * @author      Mautic
@@ -18,5 +19,5 @@ class RequiredParameterMissingException extends AbstractApiException
     /**
      * {@inheritdoc}
      */
-    const DEFAULT_MESSAGE = 'Required Parameter is missing.';
+    public const DEFAULT_MESSAGE = 'Required Parameter is missing.';
 }

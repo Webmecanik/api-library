@@ -11,106 +11,261 @@
 
 namespace Mautic\Auth;
 
+use Mautic\Exception\IncorrectParametersReturnedException;
 use Mautic\Exception\RequiredParameterMissingException;
 
+/**
+ * OAuth2 Client Credentials (2-legged OAuth2) Authentication.
+ *
+ * This authentication method is used for server-to-server communication
+ * where no user interaction is required. The application authenticates
+ * using its own credentials (client_id and client_secret).
+ *
+ * @see https://developer.mautic.org/#client-credentials
+ */
 class TwoLeggedOAuth2 extends AbstractAuth
 {
     /**
-     * Password associated with Username.
-     *
-     * @var string
+     * Consumer or client key.
      */
-    private $clientSecret;
+    protected string $_client_id;
 
     /**
-     * Username or email, basically the Login Identifier.
-     *
-     * @var string
+     * Consumer or client secret.
      */
-    private $clientKey;
+    protected string $_client_secret;
 
     /**
      * Access token returned by OAuth server.
-     *
-     * @var string
      */
-    protected $_access_token;
+    protected ?string $_access_token = null;
 
     /**
-     * @var string
+     * Unix timestamp for when token expires.
      */
-    private $baseurl;
+    protected ?int $_expires = null;
 
     /**
-     * @var string
+     * OAuth2 token type.
      */
-    private $_access_token_url;
+    protected string $_token_type = 'bearer';
 
     /**
-     * {@inheritdoc}
+     * Set to true if access token was updated.
      */
-    public function isAuthorized()
+    protected bool $_access_token_updated = false;
+
+    /**
+     * Access token URL.
+     */
+    protected string $_access_token_url;
+
+    /**
+     * Check if the current access token is still valid.
+     */
+    public function isAuthorized(): bool
     {
-        return !empty($this->clientKey) && !empty($this->clientSecret);
+        $this->log('isAuthorized()');
+
+        return $this->validateAccessToken();
     }
 
     /**
-     * @param string $baseUrl
-     * @param string $clientKey    The username to use for Authentication *Required*
-     * @param string $clientSecret The Password to use                    *Required*
+     * Setup the authentication credentials.
+     *
+     * @param string|null $baseUrl            URL of the Mautic instance
+     * @param string|null $clientKey          Client ID from Mautic API credentials
+     * @param string|null $clientSecret       Client Secret from Mautic API credentials
+     * @param string|null $accessToken        Previously stored access token (optional)
+     * @param int|null    $accessTokenExpires Unix timestamp when token expires (optional)
      *
      * @throws RequiredParameterMissingException
      */
-    public function setup($baseUrl, $clientKey, $clientSecret, $accessToken = null)
-    {
-        // we MUST have the username and password. No Blanks allowed!
-        //
-        // remove blanks else Empty doesn't work
-        $clientKey    = trim($clientKey);
-        $clientSecret = trim($clientSecret);
-
+    public function setup(
+        ?string $baseUrl = null,
+        ?string $clientKey = null,
+        ?string $clientSecret = null,
+        ?string $accessToken = null,
+        ?int $accessTokenExpires = null,
+    ): void {
         if (empty($clientKey) || empty($clientSecret)) {
-            //Throw exception if the required parameters were not found
-            $this->log('parameters did not include clientkey and/or clientSecret');
+            $this->log('parameters did not include clientKey and/or clientSecret');
             throw new RequiredParameterMissingException('One or more required parameters was not supplied. Both clientKey and clientSecret required!');
         }
 
-        $this->baseurl       = $baseUrl;
-        $this->clientKey     = $clientKey;
-        $this->clientSecret  = $clientSecret;
-        $this->_access_token = $accessToken;
+        if (empty($baseUrl)) {
+            $this->log('parameters did not include baseUrl');
+            throw new RequiredParameterMissingException('One or more required parameters was not supplied. baseUrl required!');
+        }
 
-        if (!$this->_access_token_url) {
-            $this->_access_token_url = $baseUrl.'/oauth/v2/token';
+        $this->_client_id        = trim($clientKey);
+        $this->_client_secret    = trim($clientSecret);
+        $this->_access_token_url = rtrim($baseUrl, '/').'/oauth/v2/token';
+
+        if (!empty($accessToken)) {
+            $this->setAccessTokenDetails([
+                'access_token' => $accessToken,
+                'expires'      => $accessTokenExpires,
+            ]);
         }
     }
 
     /**
-     * @param $url
-     * @param $method
-     *
-     * @return array
+     * Check if the access token was updated during the last request.
      */
-    protected function prepareRequest($url, array $headers, array $parameters, $method, array $settings)
+    public function accessTokenUpdated(): bool
     {
-        if (null !== $this->_access_token) {
+        return $this->_access_token_updated;
+    }
+
+    /**
+     * Get the current access token data.
+     *
+     * @return array{access_token: string|null, expires: int|null, token_type: string}
+     */
+    public function getAccessTokenData(): array
+    {
+        return [
+            'access_token' => $this->_access_token,
+            'expires'      => $this->_expires,
+            'token_type'   => $this->_token_type,
+        ];
+    }
+
+    /**
+     * Set access token details from stored data.
+     *
+     * @param array{access_token?: string|null, expires?: int|null, token_type?: string} $accessTokenDetails
+     *
+     * @return $this
+     */
+    public function setAccessTokenDetails(array $accessTokenDetails): static
+    {
+        $this->_access_token = $accessTokenDetails['access_token'] ?? null;
+        $this->_expires      = isset($accessTokenDetails['expires'])
+            ? (int) $accessTokenDetails['expires']
+            : null;
+
+        if (isset($accessTokenDetails['token_type'])) {
+            $this->_token_type = $accessTokenDetails['token_type'];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Validate if the current access token is still valid.
+     */
+    public function validateAccessToken(): bool
+    {
+        $this->log('validateAccessToken()');
+
+        // Check if token is expired (with 10 second buffer)
+        if (!empty($this->_access_token) && !empty($this->_expires)
+            && $this->_expires < (time() + 10)) {
+            $this->log('access token expired');
+
+            return false;
+        }
+
+        if (!empty($this->_access_token)) {
+            $this->log('has valid access token');
+
+            return true;
+        }
+
+        $this->log('no access token');
+
+        return false;
+    }
+
+    /**
+     * Request a new access token using client credentials.
+     *
+     * @throws IncorrectParametersReturnedException
+     */
+    public function requestAccessToken(): bool
+    {
+        $this->log('requestAccessToken()');
+
+        $parameters = [
+            'client_id'     => $this->_client_id,
+            'client_secret' => $this->_client_secret,
+            'grant_type'    => 'client_credentials',
+        ];
+
+        $params = $this->makeRequest($this->_access_token_url, $parameters, 'POST');
+
+        if (is_array($params)) {
+            if (isset($params['access_token']) && isset($params['expires_in'])) {
+                $this->log('access token set as '.$params['access_token']);
+
+                $this->_access_token         = $params['access_token'];
+                $this->_expires              = time() + (int) $params['expires_in'];
+                $this->_token_type           = $params['token_type'] ?? 'bearer';
+                $this->_access_token_updated = true;
+
+                if ($this->_debug) {
+                    $_SESSION['oauth']['debug']['tokens']['access_token'] = $params['access_token'];
+                    $_SESSION['oauth']['debug']['tokens']['expires_in']   = $params['expires_in'];
+                    $_SESSION['oauth']['debug']['tokens']['token_type']   = $params['token_type'] ?? null;
+                }
+
+                return true;
+            }
+        }
+
+        $this->log('response did not have an access token');
+
+        if ($this->_debug) {
+            $_SESSION['oauth']['debug']['response'] = $params;
+        }
+
+        if (isset($params['errors'])) {
+            $errors = [];
+            foreach ($params['errors'] as $error) {
+                $errors[] = $error['message'];
+            }
+            $response = implode('; ', $errors);
+        } else {
+            $response = print_r($params, true);
+        }
+
+        throw new IncorrectParametersReturnedException('Incorrect access token parameters returned: '.$response);
+    }
+
+    /**
+     * Get the access token, requesting a new one if necessary.
+     *
+     * @throws IncorrectParametersReturnedException
+     */
+    public function getAccessToken(): string
+    {
+        if (!$this->validateAccessToken()) {
+            $this->requestAccessToken();
+        }
+
+        return $this->_access_token;
+    }
+
+    protected function prepareRequest($url, array $headers, array $parameters, $method, array $settings): array
+    {
+        if (!empty($this->_access_token)) {
             $headers = array_merge($headers, ['Authorization: Bearer '.$this->_access_token]);
         }
 
         return [$headers, $parameters];
     }
 
-    public function getAccessToken(): string
+    protected function getQueryParameters($isPost, $parameters): array
     {
-        $parameters      = [
-            'client_id'     => $this->clientKey,
-            'client_secret' => $this->clientSecret,
-            'grant_type'    => 'client_credentials',
-        ];
-        $accessTokenData = $this->makeRequest($this->_access_token_url, $parameters, 'POST');
-        //store access token data however you want
-        $this->_access_token = $accessTokenData['access_token'] ?? null;
+        $query = parent::getQueryParameters($isPost, $parameters);
 
-        return $this->_access_token;
+        // Support for file uploads - pass access token as query parameter
+        if (isset($parameters['file'])) {
+            $query['access_token'] = $this->_access_token;
+        }
+
+        return $query;
     }
 }
