@@ -18,7 +18,6 @@ class FormsTest extends MauticApiTestCase
         $this->api         = $this->getContext('forms');
         $this->testPayload = [
             'name'        => 'test',
-            'formType'    => 'standalone',
             'description' => 'API test',
             'fields'      => [
                 [
@@ -139,9 +138,8 @@ class FormsTest extends MauticApiTestCase
         $response = $this->api->edit(
             $response[$this->api->itemName()]['id'],
             [
-                'name'     => 'test2',
-                'formType' => 'standalone',
-                'fields'   => [
+                'name'   => 'test2',
+                'fields' => [
                     $lastField,
                 ],
                 'actions' => [
